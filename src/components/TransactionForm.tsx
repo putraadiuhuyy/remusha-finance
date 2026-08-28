@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { PlusCircle, Loader2, Calculator, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+import { PlusCircle, Loader2, Calculator, CheckCircle2, AlertCircle, Sparkles, Edit3 } from 'lucide-react';
 import { SheetTransaction } from '../types';
 
 interface TransactionFormProps {
   lastBalance: number;
-  onSuccess: (newTx?: SheetTransaction) => void;
+  editItem?: SheetTransaction | null;
+  onSuccess: (tx?: SheetTransaction) => void;
   onCancel?: () => void;
 }
 
-export const TransactionForm: React.FC<TransactionFormProps> = ({ lastBalance, onSuccess, onCancel }) => {
+export const TransactionForm: React.FC<TransactionFormProps> = ({ 
+  lastBalance, 
+  editItem = null, 
+  onSuccess, 
+  onCancel 
+}) => {
+  const isEditMode = !!editItem;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -23,17 +30,42 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ lastBalance, o
     pj: ''
   });
 
-  const [autoCalculateSaldo, setAutoCalculateSaldo] = useState(true);
+  const [autoCalculateSaldo, setAutoCalculateSaldo] = useState(!isEditMode);
 
-  // Auto calculate suggested saldo based on last balance + pemasukan - pengeluaran
+  // Populate data if in Edit Mode
   useEffect(() => {
-    if (autoCalculateSaldo) {
+    if (editItem) {
+      setFormData({
+        tanggal: editItem.tanggal || new Date().toISOString().split('T')[0],
+        keterangan: editItem.keterangan || '',
+        pemasukan: editItem.pemasukan ? editItem.pemasukan.toString() : '',
+        pengeluaran: editItem.pengeluaran ? editItem.pengeluaran.toString() : '',
+        saldo: editItem.saldo ? editItem.saldo.toString() : '',
+        pj: editItem.pj || ''
+      });
+      setAutoCalculateSaldo(false);
+    } else {
+      setFormData({
+        tanggal: new Date().toISOString().split('T')[0],
+        keterangan: '',
+        pemasukan: '',
+        pengeluaran: '',
+        saldo: '',
+        pj: ''
+      });
+      setAutoCalculateSaldo(true);
+    }
+  }, [editItem]);
+
+  // Auto calculate suggested saldo based on last balance + pemasukan - pengeluaran (only for new transactions)
+  useEffect(() => {
+    if (autoCalculateSaldo && !isEditMode) {
       const pemasukanNum = Number(formData.pemasukan) || 0;
       const pengeluaranNum = Number(formData.pengeluaran) || 0;
       const calculated = lastBalance + pemasukanNum - pengeluaranNum;
       setFormData(prev => ({ ...prev, saldo: calculated.toString() }));
     }
-  }, [formData.pemasukan, formData.pengeluaran, lastBalance, autoCalculateSaldo]);
+  }, [formData.pemasukan, formData.pengeluaran, lastBalance, autoCalculateSaldo, isEditMode]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -49,7 +81,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ lastBalance, o
     setError(null);
     setSuccess(null);
 
-    const newTx: SheetTransaction = {
+    const txData: SheetTransaction = {
       tanggal: formData.tanggal,
       keterangan: formData.keterangan.trim(),
       pemasukan: Number(formData.pemasukan) || 0,
@@ -58,13 +90,17 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ lastBalance, o
       pj: formData.pj.trim()
     };
 
-    if (!newTx.keterangan) {
+    if (isEditMode && editItem?.id) {
+      txData.id = editItem.id;
+    }
+
+    if (!txData.keterangan) {
       setError('Keterangan / Nama kegiatan wajib diisi.');
       setIsSubmitting(false);
       return;
     }
 
-    if (!newTx.pj) {
+    if (!txData.pj) {
       setError('Penanggung Jawab (PJ) wajib diisi.');
       setIsSubmitting(false);
       return;
@@ -72,68 +108,86 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ lastBalance, o
 
     try {
       if (isSupabaseConfigured) {
-        const { data, error: submitError } = await supabase
-          .from('transactions')
-          .insert([
-            {
-              tanggal: newTx.tanggal,
-              keterangan: newTx.keterangan,
-              pemasukan: newTx.pemasukan,
-              pengeluaran: newTx.pengeluaran,
-              saldo: newTx.saldo,
-              pj: newTx.pj,
-            }
-          ])
-          .select();
+        if (isEditMode && editItem?.id) {
+          // UPDATE operation in Supabase
+          const { error: updateError } = await supabase
+            .from('transactions')
+            .update({
+              tanggal: txData.tanggal,
+              keterangan: txData.keterangan,
+              pemasukan: txData.pemasukan,
+              pengeluaran: txData.pengeluaran,
+              saldo: txData.saldo,
+              pj: txData.pj,
+            })
+            .eq('id', editItem.id);
 
-        if (submitError) {
-          console.warn('Supabase insert warning, saving locally as fallback:', submitError);
-          saveToLocalStorage(newTx);
-          setSuccess('Tersimpan di penyimpanan lokal.');
+          if (updateError) {
+            console.warn('Supabase update warning, updating local storage:', updateError);
+            updateLocalStorage(txData);
+          } else {
+            setSuccess('Perubahan transaksi berhasil disimpan ke Supabase!');
+          }
         } else {
-          setSuccess('Data transaksi berhasil disimpan ke Supabase!');
-          if (data && data[0]) {
-            newTx.id = data[0].id;
+          // INSERT operation in Supabase
+          const { data, error: submitError } = await supabase
+            .from('transactions')
+            .insert([
+              {
+                tanggal: txData.tanggal,
+                keterangan: txData.keterangan,
+                pemasukan: txData.pemasukan,
+                pengeluaran: txData.pengeluaran,
+                saldo: txData.saldo,
+                pj: txData.pj,
+              }
+            ])
+            .select();
+
+          if (submitError) {
+            console.warn('Supabase insert warning, saving locally as fallback:', submitError);
+            saveToLocalStorage(txData);
+          } else {
+            setSuccess('Data transaksi baru berhasil disimpan ke Supabase!');
+            if (data && data[0]) {
+              txData.id = data[0].id;
+            }
           }
         }
       } else {
-        saveToLocalStorage(newTx);
-        setSuccess('Data berhasil disimpan secara lokal!');
-      }
-
-      // Sync to Google Sheets Web App in background if URL configured
-      const googleSheetsUrl = import.meta.env.VITE_GOOGLE_SHEETS_URL;
-      if (googleSheetsUrl && googleSheetsUrl.startsWith('http')) {
-        try {
-          fetch(googleSheetsUrl, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newTx)
-          }).catch(e => console.warn('Google Sheets background sync notice:', e));
-        } catch (e) {
-          // ignore background sync error
+        if (isEditMode) {
+          updateLocalStorage(txData);
+          setSuccess('Perubahan transaksi berhasil disimpan secara lokal!');
+        } else {
+          saveToLocalStorage(txData);
+          setSuccess('Data berhasil disimpan secara lokal!');
         }
       }
 
-      setFormData({
-        tanggal: new Date().toISOString().split('T')[0],
-        keterangan: '',
-        pemasukan: '',
-        pengeluaran: '',
-        saldo: '',
-        pj: ''
-      });
-      setAutoCalculateSaldo(true);
-      onSuccess(newTx);
+      onSuccess(txData);
 
-      setTimeout(() => setSuccess(null), 4000);
+      if (!isEditMode) {
+        setFormData({
+          tanggal: new Date().toISOString().split('T')[0],
+          keterangan: '',
+          pemasukan: '',
+          pengeluaran: '',
+          saldo: '',
+          pj: ''
+        });
+        setAutoCalculateSaldo(true);
+      }
+
+      setTimeout(() => setSuccess(null), 3500);
     } catch (err: any) {
       console.error('Error submitting form:', err);
-      // Even if network fails, fallback to local storage
-      saveToLocalStorage(newTx);
-      setSuccess('Data berhasil disimpan ke memori lokal.');
-      onSuccess(newTx);
+      if (isEditMode) {
+        updateLocalStorage(txData);
+      } else {
+        saveToLocalStorage(txData);
+      }
+      setSuccess('Data berhasil disimpan ke memori.');
+      onSuccess(txData);
     } finally {
       setIsSubmitting(false);
     }
@@ -151,34 +205,55 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ lastBalance, o
     }
   };
 
+  const updateLocalStorage = (item: SheetTransaction) => {
+    try {
+      const stored = localStorage.getItem('remusha_local_transactions');
+      let list: SheetTransaction[] = stored ? JSON.parse(stored) : [];
+      list = list.map(t => (t.id === item.id ? item : t));
+      localStorage.setItem('remusha_local_transactions', JSON.stringify(list));
+    } catch (e) {
+      console.error('Failed to update localStorage', e);
+    }
+  };
+
   return (
-    <div className="bg-white p-5 lg:p-7 rounded-2xl border border-[#006948]/20 shadow-sm mb-6 transition-all duration-300">
+    <div 
+      id="transaction-form-card" 
+      className="bg-white p-5 lg:p-7 rounded-2xl border border-[#006948]/20 shadow-sm mb-6 transition-all duration-300 animate-fade-in"
+    >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-5 border-b border-[#e1e3e4]">
         <div>
           <div className="flex items-center gap-2">
             <span className="p-1.5 bg-[#006948]/10 text-[#006948] rounded-lg">
-              <Sparkles className="w-4 h-4" />
+              {isEditMode ? <Edit3 className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
             </span>
-            <h3 className="text-lg font-bold text-[#191c1d]">Form Input Transaksi Kas</h3>
+            <h3 className="text-lg font-bold text-[#191c1d]">
+              {isEditMode ? 'Edit Data Transaksi Kas' : 'Form Input Transaksi Kas'}
+            </h3>
           </div>
           <p className="text-xs text-[#585f6c] mt-1">
-            Data akan diurutkan dari tanggal yang lebih lama ke yang terbaru di buku kas
+            {isEditMode 
+              ? 'Perbarui informasi transaksi dan simpan perubahan' 
+              : 'Data akan diurutkan dari tanggal yang lebih lama ke yang terbaru di buku kas'}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setAutoCalculateSaldo(!autoCalculateSaldo)}
-            className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all ${autoCalculateSaldo
-                ? 'bg-emerald-50 text-emerald-800 border-emerald-200 shadow-xs'
-                : 'bg-gray-100 text-gray-600 border-gray-200'
+        {!isEditMode && (
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setAutoCalculateSaldo(!autoCalculateSaldo)}
+              className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
+                autoCalculateSaldo
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200 shadow-xs'
+                  : 'bg-gray-100 text-gray-600 border-gray-200'
               }`}
-          >
-            <Calculator className="w-3.5 h-3.5" />
-            <span>{autoCalculateSaldo ? 'Hitung Saldo Otomatis: ON' : 'Saldo Manual'}</span>
-          </button>
-        </div>
+            >
+              <Calculator className="w-3.5 h-3.5" />
+              <span>{autoCalculateSaldo ? 'Hitung Saldo Otomatis: ON' : 'Saldo Manual'}</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {error && (
@@ -315,9 +390,9 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ lastBalance, o
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2.5 text-xs font-semibold text-[#585f6c] hover:text-[#191c1d] hover:bg-gray-100 rounded-xl transition-all"
+              className="px-4 py-2.5 text-xs font-semibold text-[#585f6c] hover:text-[#191c1d] hover:bg-gray-100 rounded-xl transition-all cursor-pointer"
             >
-              Tutup Form
+              Batal
             </button>
           )}
 
@@ -329,12 +404,12 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ lastBalance, o
             {isSubmitting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Menyimpan...</span>
+                <span>{isEditMode ? 'Menyimpan Perubahan...' : 'Menyimpan...'}</span>
               </>
             ) : (
               <>
-                <PlusCircle className="w-4 h-4" />
-                <span>Simpan Transaksi</span>
+                {isEditMode ? <Edit3 className="w-4 h-4" /> : <PlusCircle className="w-4 h-4" />}
+                <span>{isEditMode ? 'Simpan Perubahan' : 'Simpan Transaksi'}</span>
               </>
             )}
           </button>

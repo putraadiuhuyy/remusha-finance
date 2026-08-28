@@ -9,16 +9,17 @@ import {
   Database, 
   HardDrive, 
   Trash2, 
+  Edit3,
   UserCheck, 
   Calendar,
   Table as TableIcon,
   Download,
-  Eye,
-  ShieldAlert
+  Eye
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { SheetTransaction, AppUser } from '../types';
 import { TransactionForm } from './TransactionForm';
+import { DeleteConfirmModal } from './DeleteConfirmModal';
 import { formatRupiah } from '../data/financialData';
 
 // Initial default seed data (empty for fresh start)
@@ -34,6 +35,12 @@ export const TransactionView: React.FC<TransactionViewProps> = ({ currentUser })
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<SheetTransaction | null>(null);
+  
+  // Custom Delete Modal State
+  const [deletingTransaction, setDeletingTransaction] = useState<SheetTransaction | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const [usingDatabase, setUsingDatabase] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
 
@@ -96,37 +103,58 @@ export const TransactionView: React.FC<TransactionViewProps> = ({ currentUser })
     fetchTransactions();
   }, []);
 
-  // Delete transaction handler
-  const handleDelete = async (id?: number | string) => {
+  // Delete transaction trigger via custom modal
+  const handleOpenDeleteModal = (tx: SheetTransaction) => {
     if (isViewer) {
       alert('Mode Viewer hanya memiliki izin membaca.');
       return;
     }
-    if (!id) return;
-    if (!window.confirm('Apakah Anda yakin ingin menghapus baris transaksi ini?')) return;
+    setDeletingTransaction(tx);
+  };
+
+  // Perform delete after confirmation
+  const handleConfirmDelete = async () => {
+    if (!deletingTransaction) return;
+    setIsDeleting(true);
+
+    const targetId = deletingTransaction.id;
 
     try {
-      if (isSupabaseConfigured && usingDatabase) {
-        const { error } = await supabase.from('transactions').delete().eq('id', id);
+      if (isSupabaseConfigured && usingDatabase && targetId) {
+        const { error } = await supabase.from('transactions').delete().eq('id', targetId);
         if (error) throw error;
       }
 
       // Update local state
-      const updated = transactions.filter(t => t.id !== id);
+      const updated = transactions.filter(t => t.id !== targetId);
       setTransactions(updated);
       localStorage.setItem('remusha_local_transactions', JSON.stringify(updated));
+
+      // Close modal
+      setDeletingTransaction(null);
     } catch (err: any) {
       alert('Gagal menghapus: ' + err.message);
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  // Open edit form with selected transaction
+  const handleOpenEdit = (tx: SheetTransaction) => {
+    if (isViewer) return;
+    setEditingTransaction(tx);
+    setShowForm(true);
+    // Smooth scroll to top of form
+    window.scrollTo({ top: 100, behavior: 'smooth' });
   };
 
   // Filter transactions
   const filtered = transactions.filter(tx => {
     const term = searchTerm.toLowerCase();
     return (
-      tx.keterangan.toLowerCase().includes(term) ||
-      tx.pj.toLowerCase().includes(term) ||
-      tx.tanggal.includes(term)
+      (tx.keterangan || '').toLowerCase().includes(term) ||
+      (tx.pj || '').toLowerCase().includes(term) ||
+      (tx.tanggal || '').includes(term)
     );
   });
 
@@ -144,11 +172,11 @@ export const TransactionView: React.FC<TransactionViewProps> = ({ currentUser })
     const rows = filtered.map((tx, idx) => [
       idx + 1,
       tx.tanggal,
-      `"${tx.keterangan.replace(/"/g, '""')}"`,
+      `"${(tx.keterangan || '').replace(/"/g, '""')}"`,
       tx.pemasukan,
       tx.pengeluaran,
       tx.saldo,
-      `"${tx.pj.replace(/"/g, '""')}"`
+      `"${(tx.pj || '').replace(/"/g, '""')}"`
     ]);
 
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
@@ -167,7 +195,7 @@ export const TransactionView: React.FC<TransactionViewProps> = ({ currentUser })
       {/* Top Banner KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-[#e1e3e4] shadow-xs flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-[#006948] flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-[#006948] flex items-center justify-center shrink-0">
             <ArrowDownLeft className="w-6 h-6" />
           </div>
           <div>
@@ -177,7 +205,7 @@ export const TransactionView: React.FC<TransactionViewProps> = ({ currentUser })
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-[#e1e3e4] shadow-xs flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-red-50 text-[#ba1a1a] flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-red-50 text-[#ba1a1a] flex items-center justify-center shrink-0">
             <ArrowUpRight className="w-6 h-6" />
           </div>
           <div>
@@ -187,7 +215,7 @@ export const TransactionView: React.FC<TransactionViewProps> = ({ currentUser })
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-[#e1e3e4] shadow-xs flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-[#006948]/10 text-[#006948] flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-[#006948]/10 text-[#006948] flex items-center justify-center shrink-0">
             <Wallet className="w-6 h-6" />
           </div>
           <div>
@@ -215,7 +243,7 @@ export const TransactionView: React.FC<TransactionViewProps> = ({ currentUser })
             {isViewer ? (
               <span className="inline-flex items-center gap-1.5 text-xs bg-blue-50 text-blue-800 font-semibold px-3 py-1.5 rounded-xl border border-blue-200">
                 <Eye className="w-3.5 h-3.5 text-blue-600" />
-                <span>Mode Viewer</span>
+                <span>Mode Viewer (Hanya Lihat)</span>
               </span>
             ) : usingDatabase ? (
               <span className="inline-flex items-center gap-1.5 text-xs bg-emerald-50 text-emerald-800 font-semibold px-3 py-1.5 rounded-xl border border-emerald-200">
@@ -248,11 +276,14 @@ export const TransactionView: React.FC<TransactionViewProps> = ({ currentUser })
 
             {!isViewer && (
               <button
-                onClick={() => setShowForm(!showForm)}
+                onClick={() => {
+                  setEditingTransaction(null);
+                  setShowForm(!showForm);
+                }}
                 className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#006948] hover:bg-[#005137] rounded-xl transition-all shadow-xs cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
-                <span>{showForm ? 'Tutup Form' : 'Tambah Data Baru'}</span>
+                <span>{showForm && !editingTransaction ? 'Tutup Form' : 'Tambah Data Baru'}</span>
               </button>
             )}
           </div>
@@ -271,14 +302,20 @@ export const TransactionView: React.FC<TransactionViewProps> = ({ currentUser })
         </div>
       </div>
 
-      {/* Embedded Input Form (Admin / Bendahara only) */}
+      {/* Embedded Input & Edit Form (Admin / Bendahara only) */}
       {!isViewer && showForm && (
         <TransactionForm
           lastBalance={lastBalance}
+          editItem={editingTransaction}
           onSuccess={() => {
             fetchTransactions();
+            setShowForm(false);
+            setEditingTransaction(null);
           }}
-          onCancel={() => setShowForm(false)}
+          onCancel={() => {
+            setShowForm(false);
+            setEditingTransaction(null);
+          }}
         />
       )}
 
@@ -305,7 +342,7 @@ export const TransactionView: React.FC<TransactionViewProps> = ({ currentUser })
                     <span>PJ</span>
                   </div>
                 </th>
-                {!isViewer && <th className="py-3.5 px-3 text-center w-14">Aksi</th>}
+                {!isViewer && <th className="py-3.5 px-3 text-center w-24">Aksi</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e1e3e4] text-[#191c1d] text-xs md:text-sm font-normal">
@@ -361,21 +398,30 @@ export const TransactionView: React.FC<TransactionViewProps> = ({ currentUser })
 
                       {/* 7. PJ */}
                       <td className="py-3 px-4 text-[#585f6c] font-medium whitespace-nowrap border-r border-[#e1e3e4]">
-                        <span className="inline-block bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs">
+                        <span className="inline-block bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs font-semibold">
                           {tx.pj || '-'}
                         </span>
                       </td>
 
-                      {/* 8. Aksi */}
+                      {/* 8. Aksi (Edit & Hapus) */}
                       {!isViewer && (
                         <td className="py-3 px-3 text-center">
-                          <button
-                            onClick={() => handleDelete(tx.id)}
-                            title="Hapus baris"
-                            className="text-gray-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              onClick={() => handleOpenEdit(tx)}
+                              title="Edit transaksi"
+                              className="text-gray-400 hover:text-[#006948] p-1.5 rounded-lg hover:bg-emerald-50 transition-colors cursor-pointer"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleOpenDeleteModal(tx)}
+                              title="Hapus baris"
+                              className="text-gray-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </td>
                       )}
                     </tr>
@@ -387,7 +433,10 @@ export const TransactionView: React.FC<TransactionViewProps> = ({ currentUser })
                     <p className="font-medium text-sm">Tidak ada baris data transaksi yang cocok.</p>
                     {!isViewer && (
                       <button
-                        onClick={() => setShowForm(true)}
+                        onClick={() => {
+                          setEditingTransaction(null);
+                          setShowForm(true);
+                        }}
                         className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#006948] hover:underline cursor-pointer"
                       >
                         <Plus className="w-3.5 h-3.5" />
@@ -410,6 +459,15 @@ export const TransactionView: React.FC<TransactionViewProps> = ({ currentUser })
           </div>
         </div>
       </div>
+
+      {/* Custom Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={!!deletingTransaction}
+        transaction={deletingTransaction}
+        isDeleting={isDeleting}
+        onClose={() => setDeletingTransaction(null)}
+        onConfirm={handleConfirmDelete}
+      />
 
     </div>
   );
