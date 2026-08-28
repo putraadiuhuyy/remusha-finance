@@ -25,33 +25,33 @@ interface LoginViewProps {
   onLogin: (user: AppUser) => void;
 }
 
-// Default Fallback Users
+// Default Fallback Users Sesuai Role / Sie Tanpa Nama Pribadi
 export const DEFAULT_USERS: { [key: string]: AppUser & { password: string; description: string } } = {
   admin: {
     id: 'usr_admin',
-    username: 'admin',
-    name: 'Ust. H. Ahmad Fauzi',
-    password: 'admin',
+    username: 'adminremusha',
+    name: 'Admin Remusha',
+    password: 'remusha0405',
     role: 'admin',
-    roleLabel: 'Ketua Takmir / Administrator',
+    roleLabel: 'Admin Remusha',
     description: 'Akses Penuh: Input, Edit, Hapus, Rekap Keuangan & Pengaturan.'
   },
   bendahara: {
     id: 'usr_bendahara',
     username: 'bendahara',
-    name: 'H. Syarifuddin, SE',
-    password: 'bendahara',
+    name: 'Bendahara',
+    password: 'remusha0405',
     role: 'bendahara',
-    roleLabel: 'Bendahara Kas',
-    description: 'Akses Keuangan: Pencatatan Infaq, Pengeluaran & Sinkronisasi.'
+    roleLabel: 'Bendahara',
+    description: 'Akses Keuangan: Pencatatan Kas & Sinkronisasi.'
   },
   viewer: {
     id: 'usr_viewer',
-    username: 'jamaah',
-    name: 'Jamaah Masjid',
-    password: '',
+    username: 'viewer',
+    name: 'Viewer',
+    password: 'viewer',
     role: 'viewer',
-    roleLabel: 'Jamaah (Mode Transparansi)',
+    roleLabel: 'Viewer (Anggota Remusha)',
     description: 'Akses Publik: Melihat ringkasan saldo, grafik & laporan terbuka.'
   }
 };
@@ -66,7 +66,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   
-  // Register Form State
+  // Register Form State (Role / Sie)
   const [regName, setRegName] = useState('');
   const [regUsername, setRegUsername] = useState('');
   const [regPassword, setRegPassword] = useState('');
@@ -86,7 +86,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
     const trimmedUser = username.trim().toLowerCase();
 
     if (!trimmedUser) {
-      setError('Masukkan username atau email Anda.');
+      setError('Masukkan username atau akun Anda.');
       setIsLoading(false);
       return;
     }
@@ -103,7 +103,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
           .maybeSingle();
 
         if (dbUser) {
-          // If password is required and doesn't match
           if (dbUser.password && dbUser.password !== password) {
             setError('Password yang Anda masukkan salah.');
             setIsLoading(false);
@@ -112,18 +111,20 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
 
           loggedInUser = {
             id: String(dbUser.id),
-            name: dbUser.name,
+            name: dbUser.name || (dbUser.role === 'admin' ? 'Admin Remusha' : dbUser.role === 'bendahara' ? 'Bendahara' : 'Viewer'),
             username: dbUser.username,
             role: dbUser.role as UserRole,
-            roleLabel: dbUser.role_label || (dbUser.role === 'admin' ? 'Ketua Takmir' : 'Pengurus Kas')
+            roleLabel: dbUser.role_label || (dbUser.role === 'admin' ? 'Admin Remusha' : dbUser.role === 'bendahara' ? 'Bendahara' : 'Viewer')
           };
         }
       }
 
-      // 2. Fallback to Local/Default Users if not found in Supabase
+      // 2. Fallback to Default Users if not found in Supabase
       if (!loggedInUser) {
         const defaultMatch = Object.values(DEFAULT_USERS).find(
-          u => u.username.toLowerCase() === trimmedUser
+          u => u.username.toLowerCase() === trimmedUser || 
+               (trimmedUser === 'admin' && u.username === 'adminremusha') ||
+               (trimmedUser === 'jamaah' && u.username === 'viewer')
         );
 
         if (defaultMatch) {
@@ -154,7 +155,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
       if (loggedInUser) {
         onLogin(loggedInUser);
       } else {
-        setError('Akun tidak ditemukan di database. Silakan gunakan tombol Akses Cepat atau daftar akun baru.');
+        setError('Akun tidak ditemukan di database. Silakan gunakan tombol Akses Cepat atau daftar role baru.');
       }
     } catch (err: any) {
       console.error('Login error:', err);
@@ -164,7 +165,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
     }
   };
 
-  // Register new user into Supabase DB
+  // Register new role/sie into Supabase DB
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -181,9 +182,9 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
     }
 
     const roleLabelMap: Record<UserRole, string> = {
-      admin: 'Ketua Takmir / Administrator',
-      bendahara: 'Bendahara Kas',
-      viewer: 'Jamaah (Mode Transparansi)'
+      admin: 'Admin Remusha',
+      bendahara: 'Bendahara',
+      viewer: 'Viewer'
     };
 
     const newUserObj = {
@@ -215,9 +216,9 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
       localUsers.push(newUserObj);
       localStorage.setItem('remusha_local_users', JSON.stringify(localUsers));
 
-      setSuccess('Pendaftaran berhasil! Akun telah tersimpan di database.');
+      setSuccess('Pendaftaran berhasil! Role / Sie telah tersimpan di database.');
       
-      // Auto login after 1.5s
+      // Auto login after 1.2s
       setTimeout(() => {
         onLogin({
           id: 'usr_' + Date.now(),
@@ -229,7 +230,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
       }, 1200);
 
     } catch (err: any) {
-      setError(err.message || 'Gagal mendaftarkan pengguna baru.');
+      setError(err.message || 'Gagal mendaftarkan role/sie baru.');
     } finally {
       setIsLoading(false);
     }
@@ -270,7 +271,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
           </p>
         </div>
 
-        {/* Tab Switcher: Login vs Daftar Akun */}
+        {/* Tab Switcher: Login vs Daftar Role Baru */}
         <div className="flex items-center bg-[#f0f2f1] p-1 rounded-2xl mb-5 border border-[#e1e3e4]">
           <button
             type="button"
@@ -292,7 +293,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                 : 'text-[#585f6c] hover:text-[#191c1d]'
             }`}
           >
-            Daftar Takmir Baru
+            Daftar Role / Sie Baru
           </button>
         </div>
 
@@ -318,11 +319,11 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
               <div className="space-y-1">
                 <label className="text-xs font-bold text-[#191c1d] flex items-center gap-1.5">
                   <User className="w-3.5 h-3.5 text-[#006948]" />
-                  <span>Username / Akun Database</span>
+                  <span>Username / Role</span>
                 </label>
                 <input 
                   type="text" 
-                  placeholder="Contoh: admin atau bendahara"
+                  placeholder="Contoh: adminremusha atau bendahara"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#006948] transition-all"
@@ -337,7 +338,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                 <div className="relative">
                   <input 
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Masukkan password akun"
+                    placeholder="Masukkan password role"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full pl-3.5 pr-10 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#006948] transition-all"
@@ -366,15 +367,15 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
             <div className="relative flex py-2 items-center mb-4">
               <div className="flex-grow border-t border-[#e1e3e4]"></div>
               <span className="shrink mx-3 text-[11px] font-bold text-[#585f6c] uppercase tracking-wider">
-                Akses Cepat Akun Default
+                Akses Cepat (1-Klik)
               </span>
               <div className="flex-grow border-t border-[#e1e3e4]"></div>
             </div>
 
-            {/* 3 Quick Role Selection Cards */}
+            {/* 3 Quick Role Selection Cards Sesuai Role/Sie */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               
-              {/* Admin */}
+              {/* 1. Admin Remusha */}
               <button
                 type="button"
                 onClick={() => handleQuickLogin('admin')}
@@ -389,12 +390,12 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                   </span>
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-[#191c1d] group-hover:text-[#006948]">Ketua Takmir</h4>
-                  <p className="text-[10px] text-[#585f6c] mt-0.5 leading-tight">user: admin</p>
+                  <h4 className="text-xs font-bold text-[#191c1d] group-hover:text-[#006948]">Admin Remusha</h4>
+                  <p className="text-[10px] text-[#585f6c] mt-0.5 leading-tight">user: adminremusha</p>
                 </div>
               </button>
 
-              {/* Bendahara */}
+              {/* 2. Bendahara */}
               <button
                 type="button"
                 onClick={() => handleQuickLogin('bendahara')}
@@ -414,7 +415,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                 </div>
               </button>
 
-              {/* Jamaah */}
+              {/* 3. Viewer */}
               <button
                 type="button"
                 onClick={() => handleQuickLogin('viewer')}
@@ -429,7 +430,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
                   </span>
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-[#191c1d] group-hover:text-blue-800">Jamaah</h4>
+                  <h4 className="text-xs font-bold text-[#191c1d] group-hover:text-blue-800">Viewer</h4>
                   <p className="text-[10px] text-[#585f6c] mt-0.5 leading-tight">Mode Pantau</p>
                 </div>
               </button>
@@ -437,13 +438,13 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
             </div>
           </>
         ) : (
-          /* FORM 2: REGISTER */
+          /* FORM 2: REGISTER ROLE / SIE */
           <form onSubmit={handleRegisterSubmit} className="space-y-3.5 text-left mb-4 animate-fade-in">
             <div className="space-y-1">
-              <label className="text-xs font-bold text-[#191c1d]">Nama Lengkap Pengurus</label>
+              <label className="text-xs font-bold text-[#191c1d]">Nama Role / Sie / Divisi</label>
               <input 
                 type="text" 
-                placeholder="Contoh: Ust. Salman Al-Farisi"
+                placeholder="Contoh: Sie Perlengkapan / Sie Humas / Sie Keamanan"
                 value={regName}
                 onChange={(e) => setRegName(e.target.value)}
                 required
@@ -452,10 +453,10 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-[#191c1d]">Username Baru (Huruf Kecil)</label>
+              <label className="text-xs font-bold text-[#191c1d]">Username Baru (Huruf Kecil Tanpa Spasi)</label>
               <input 
                 type="text" 
-                placeholder="Contoh: salman"
+                placeholder="Contoh: perlengkapan"
                 value={regUsername}
                 onChange={(e) => setRegUsername(e.target.value)}
                 required
@@ -476,15 +477,15 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-[#191c1d]">Peran / Hak Akses</label>
+              <label className="text-xs font-bold text-[#191c1d]">Tingkat Hak Akses</label>
               <select
                 value={regRole}
                 onChange={(e) => setRegRole(e.target.value as UserRole)}
                 className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#006948] transition-all font-medium"
               >
-                <option value="admin">Ketua Takmir (Admin - Akses Penuh)</option>
-                <option value="bendahara">Bendahara (Finance - Input Kas)</option>
-                <option value="viewer">Jamaah (Viewer - Hanya Lihat)</option>
+                <option value="admin">Admin Remusha (Akses Penuh)</option>
+                <option value="bendahara">Bendahara (Input &amp; Kelola Kas)</option>
+                <option value="viewer">Viewer (Anggota Remusha - Hanya Lihat)</option>
               </select>
             </div>
 
@@ -494,7 +495,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
               className="w-full mt-3 py-3 bg-[#006948] hover:bg-[#005137] text-white font-bold rounded-xl text-sm transition-all duration-200 shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
             >
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
-              <span>{isLoading ? 'Mendaftarkan...' : 'Simpan User ke Database'}</span>
+              <span>{isLoading ? 'Mendaftarkan...' : 'Simpan Role ke Database'}</span>
             </button>
           </form>
         )}

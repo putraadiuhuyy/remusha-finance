@@ -252,7 +252,7 @@ export const TransactionView: React.FC<TransactionViewProps> = ({ currentUser })
             {isViewer ? (
               <span className="inline-flex items-center gap-1.5 text-xs bg-blue-50 text-blue-800 font-semibold px-3 py-1.5 rounded-xl border border-blue-200">
                 <Eye className="w-3.5 h-3.5 text-blue-600" />
-                <span>Mode Lihat Jamaah</span>
+                <span>Mode Viewer</span>
               </span>
             ) : usingDatabase ? (
               <span className="inline-flex items-center gap-1.5 text-xs bg-emerald-50 text-emerald-800 font-semibold px-3 py-1.5 rounded-xl border border-emerald-200">

@@ -80,7 +80,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           />
           <div className="flex flex-col">
             <span className="font-bold text-[#006948] text-base leading-tight">REMUSHA Finance</span>
-            <span className="text-[11px] text-[#585f6c]">{currentUser?.name || 'Jamaah (Viewer)'}</span>
+            <span className="text-[11px] text-[#585f6c]">{currentUser?.name || 'Viewer'}</span>
           </div>
         </div>
         <button 
