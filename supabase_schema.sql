@@ -1,9 +1,58 @@
 -- ==============================================================================
 -- REMUSHA FINANCE: Skrip Pembuatan Tabel Database Supabase
--- Tabel Transaksi Kas Masjid (Sesuai Format Spreadsheet Google Sheets)
+-- 1. Tabel Transaksi Kas Masjid (Format Google Sheets)
+-- 2. Tabel Pengguna / Users (Autentikasi & Role Manajemen)
 -- ==============================================================================
 
--- 1. Buat Tabel Transactions jika belum ada
+-- ==============================================================================
+-- 1. TABEL PENGGUNA (USERS) UNTUK LOGIN
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS users (
+  id BIGSERIAL PRIMARY KEY,
+  username TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  name TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'viewer', -- 'admin', 'bendahara', 'viewer'
+  role_label TEXT NOT NULL DEFAULT 'Jamaah (Viewer)',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Setup RLS untuk tabel users
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public select users" ON users;
+CREATE POLICY "Allow public select users" 
+ON users FOR SELECT 
+USING (true);
+
+DROP POLICY IF EXISTS "Allow public insert users" ON users;
+CREATE POLICY "Allow public insert users" 
+ON users FOR INSERT 
+WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow public update users" ON users;
+CREATE POLICY "Allow public update users" 
+ON users FOR UPDATE 
+USING (true);
+
+DROP POLICY IF EXISTS "Allow public delete users" ON users;
+CREATE POLICY "Allow public delete users" 
+ON users FOR DELETE 
+USING (true);
+
+-- Masukkan data akun awal ke database Supabase
+INSERT INTO users (username, password, name, role, role_label)
+VALUES 
+  ('admin', 'admin', 'Ust. H. Ahmad Fauzi', 'admin', 'Ketua Takmir / Administrator'),
+  ('bendahara', 'bendahara', 'H. Syarifuddin, SE', 'bendahara', 'Bendahara Kas'),
+  ('jamaah', 'jamaah', 'Jamaah Masjid', 'viewer', 'Jamaah (Mode Transparansi)')
+ON CONFLICT (username) DO UPDATE 
+SET password = EXCLUDED.password, name = EXCLUDED.name, role = EXCLUDED.role, role_label = EXCLUDED.role_label;
+
+
+-- ==============================================================================
+-- 2. TABEL TRANSAKSI KAS (TRANSACTIONS)
+-- ==============================================================================
 CREATE TABLE IF NOT EXISTS transactions (
   id BIGSERIAL PRIMARY KEY,
   tanggal DATE NOT NULL,
@@ -15,37 +64,33 @@ CREATE TABLE IF NOT EXISTS transactions (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 2. Index untuk mengoptimalkan urutan tanggal terlama di atas (ASC)
+-- Index untuk mengoptimalkan urutan tanggal terlama di atas (ASC)
 CREATE INDEX IF NOT EXISTS idx_transactions_tanggal_asc ON transactions (tanggal ASC, id ASC);
 
--- 3. Setup Row Level Security (RLS)
+-- Setup Row Level Security (RLS)
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 
--- Izinkan publik untuk membaca data (SELECT)
 DROP POLICY IF EXISTS "Allow public select" ON transactions;
 CREATE POLICY "Allow public select" 
 ON transactions FOR SELECT 
 USING (true);
 
--- Izinkan publik untuk menambah data (INSERT)
 DROP POLICY IF EXISTS "Allow public insert" ON transactions;
 CREATE POLICY "Allow public insert" 
 ON transactions FOR INSERT 
 WITH CHECK (true);
 
--- Izinkan publik untuk mengubah data (UPDATE)
 DROP POLICY IF EXISTS "Allow public update" ON transactions;
 CREATE POLICY "Allow public update" 
 ON transactions FOR UPDATE 
 USING (true);
 
--- Izinkan publik untuk menghapus data (DELETE)
 DROP POLICY IF EXISTS "Allow public delete" ON transactions;
 CREATE POLICY "Allow public delete" 
 ON transactions FOR DELETE 
 USING (true);
 
--- 4. (Opsional) Masukkan Data Awal Uji Coba Sesuai Urutan Tanggal
+-- Data Awal Uji Coba Sesuai Urutan Tanggal
 INSERT INTO transactions (tanggal, keterangan, pemasukan, pengeluaran, saldo, pj)
 VALUES 
   ('2024-01-05', 'Saldo Awal Tahun & Infaq Kotak Utama', 5000000, 0, 5000000, 'Ust. Ahmad'),
