@@ -6,11 +6,15 @@
  * Skrip ini menyediakan:
  * 1. Web App API (doGet / doPost) untuk menerima/mengirim data langsung dari Web REMUSHA.
  * 2. Menu kustom "🕌 REMUSHA" di toolbar Google Sheets.
- * 3. Fitur hitung saldo otomatis dan pengurutan kronologis (tanggal lama di atas).
+ * 3. Fitur format otomatis awalan "Rp" pada kolom Pemasukan, Pengeluaran, dan Saldo.
+ * 4. Fitur hitung saldo otomatis dan pengurutan kronologis (tanggal lama di atas).
  */
 
 const SUPABASE_URL = "https://pbxzrhzmtdfeldovqevz.supabase.co";
 const SUPABASE_KEY = "sb_publishable_yb6iBTiYIXCT6dDRUvJ3qQ_GgKm2AH8";
+
+// Format Rupiah standar Google Sheets: "Rp " #,##0
+const RUPIAH_NUMBER_FORMAT = '"Rp "#,##0;("Rp "#,##0);"-"';
 
 /**
  * ------------------------------------------------------------------------------
@@ -85,7 +89,7 @@ function doPost(e) {
     const keterangan = body.keterangan || '';
     const pemasukan = Number(body.pemasukan) || 0;
     const pengeluaran = Number(body.pengeluaran) || 0;
-    const pj = body.pj || 'Takmir';
+    const pj = body.pj || 'Admin Remusha';
 
     const lastRow = sheet.getLastRow();
     const newRowIndex = Math.max(lastRow + 1, 2);
@@ -97,17 +101,19 @@ function doPost(e) {
       keterangan,
       pemasukan,
       pengeluaran,
-      0, // Saldo akan dihitung ulang otomatis di bawah
+      0, // Saldo akan dihitung ulang otomatis
       pj
     ]);
 
-    // Urutkan tanggal terlama di atas dan hitung ulang saldo
+    // 1. Urutkan berdasarkan tanggal ASC (tanggal lebih lama di atas)
     sortTransactionsByDate();
+
+    // 2. Hitung ulang running balance dan format Rp
     recalculateRunningBalance();
 
     return ContentService.createTextOutput(JSON.stringify({
       status: 'success',
-      message: 'Data berhasil ditambahkan ke Google Sheets!'
+      message: 'Transaksi berhasil dicatat dan diformat Rp di Google Sheets.'
     })).setMimeType(ContentService.MimeType.JSON);
 
   } catch (error) {
@@ -118,36 +124,117 @@ function doPost(e) {
   }
 }
 
-
 /**
  * ------------------------------------------------------------------------------
- * B. MENU KUSTOM & FUNGSI GOOGLE SHEETS
+ * B. MENU KHUSUS "🕌 REMUSHA" DI GOOGLE SHEETS
  * ------------------------------------------------------------------------------
  */
-
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('🕌 REMUSHA')
-    .addItem('📤 Kirim Data ke Supabase (Sync)', 'syncSheetToSupabase')
-    .addItem('📥 Tarik Data dari Supabase', 'fetchSupabaseToSheet')
+    .addItem('💰 Format Kolom Rupiah (Rp)', 'formatCurrencyRp')
+    .addItem('🔄 Hitung Ulang Saldo & Urutkan Tanggal', 'recalculateAndSort')
     .addSeparator()
-    .addItem('📅 Urutkan Tanggal (Lama di Atas)', 'sortTransactionsByDate')
-    .addItem('🧮 Hitung Ulang Saldo Otomatis', 'recalculateRunningBalance')
+    .addItem('⬆️ Sinkronkan Spreadsheet ke Supabase', 'syncSheetToSupabase')
+    .addItem('⬇️ Ambil Data dari Database Supabase', 'fetchSupabaseToSheet')
     .addToUi();
 }
 
 /**
- * 1. MENGIRIM SEMUA DATA SPREADSHEET KE SUPABASE
+ * ------------------------------------------------------------------------------
+ * C. FUNGSI UTAMA FORMAT RUPIAH & PENGURUTAN
+ * ------------------------------------------------------------------------------
+ */
+
+/**
+ * 1. FORMAT AWALAN "Rp" PADA KOLOM PEMASUKAN, PENGELUARAN, DAN SALDO
+ */
+function formatCurrencyRp() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const lastRow = Math.max(sheet.getLastRow(), 2);
+  
+  // Format Kolom D (Pemasukan), E (Pengeluaran), dan F (Saldo) dengan format Rp
+  sheet.getRange(2, 4, lastRow - 1, 3).setNumberFormat(RUPIAH_NUMBER_FORMAT);
+  
+  // Rata Kanan untuk angka uang
+  sheet.getRange(2, 4, lastRow - 1, 3).setHorizontalAlignment('right');
+  
+  // Rata Tengah untuk No dan Tanggal
+  sheet.getRange(2, 1, lastRow - 1, 2).setHorizontalAlignment('center');
+}
+
+/**
+ * 2. GABUNGAN: URUTKAN TANGGAL, HITUNG SALDO, DAN FORMAT RP
+ */
+function recalculateAndSort() {
+  sortTransactionsByDate();
+  recalculateRunningBalance();
+  formatCurrencyRp();
+  SpreadsheetApp.getUi().alert('Selesai! ✨', 'Tabel berhasil diurutkan berdasarkan tanggal lama di atas, saldo telah dihitung ulang, dan kolom telah diawali Rp.', SpreadsheetApp.getUi().ButtonSet.OK);
+}
+
+/**
+ * 3. MENGURUTKAN BARIS BERDASARKAN TANGGAL TERLAMA DI ATAS (ASC)
+ */
+function sortTransactionsByDate() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const lastRow = sheet.getLastRow();
+  
+  if (lastRow <= 2) return;
+
+  const range = sheet.getRange(2, 1, lastRow - 1, 7);
+  range.sort([{ column: 2, ascending: true }]);
+
+  // Perbaiki penomoran urut No (Kolom 1)
+  for (let i = 2; i <= lastRow; i++) {
+    sheet.getRange(i, 1).setValue(i - 1);
+  }
+}
+
+/**
+ * 4. MENGHITUNG ULANG SALDO AKUMULASI DARI ATAS KE BAWAH
+ */
+function recalculateRunningBalance() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const lastRow = sheet.getLastRow();
+
+  if (lastRow < 2) return;
+
+  const data = sheet.getRange(2, 1, lastRow - 1, 7).getValues();
+  let currentBalance = 0;
+
+  for (let i = 0; i < data.length; i++) {
+    const pemasukan = Number(data[i][3]) || 0;
+    const pengeluaran = Number(data[i][4]) || 0;
+    currentBalance = currentBalance + pemasukan - pengeluaran;
+    
+    sheet.getRange(i + 2, 6).setValue(currentBalance);
+    sheet.getRange(i + 2, 1).setValue(i + 1);
+  }
+
+  // Terapkan format Rp
+  sheet.getRange(2, 4, data.length, 3).setNumberFormat(RUPIAH_NUMBER_FORMAT);
+}
+
+/**
+ * ------------------------------------------------------------------------------
+ * D. SINKRONISASI KE SUPABASE
+ * ------------------------------------------------------------------------------
+ */
+
+/**
+ * MENGIRIM DATA DARI SPREADSHEET KE DATABASE SUPABASE
  */
 function syncSheetToSupabase() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   const lastRow = sheet.getLastRow();
   
   if (lastRow < 2) {
-    SpreadsheetApp.getUi().alert('Pemberitahuan', 'Tidak ada data transaksi untuk dikirim.', SpreadsheetApp.getUi().ButtonSet.OK);
+    SpreadsheetApp.getUi().alert('Peringatan', 'Tidak ada data transaksi di Spreadsheet.', SpreadsheetApp.getUi().ButtonSet.OK);
     return;
   }
 
+  // Urutkan dan hitung saldo dulu
   sortTransactionsByDate();
   recalculateRunningBalance();
 
@@ -157,11 +244,11 @@ function syncSheetToSupabase() {
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
     const rawDate = row[1];
-    const keterangan = String(row[2] || '').trim();
+    const keterangan = row[2];
     const pemasukan = Number(row[3]) || 0;
     const pengeluaran = Number(row[4]) || 0;
     const saldo = Number(row[5]) || 0;
-    const pj = String(row[6] || '').trim();
+    const pj = row[6];
 
     if (!rawDate && !keterangan) continue;
 
@@ -178,7 +265,7 @@ function syncSheetToSupabase() {
       pemasukan: pemasukan,
       pengeluaran: pengeluaran,
       saldo: saldo,
-      pj: pj || 'Takmir'
+      pj: pj || 'Admin Remusha'
     });
   }
 
@@ -214,7 +301,7 @@ function syncSheetToSupabase() {
 }
 
 /**
- * 2. MENARIK DATA DARI SUPABASE KE SPREADSHEET (Urut Tanggal Lama di Atas)
+ * MENARIK DATA DARI SUPABASE KE SPREADSHEET (Urut Tanggal Lama di Atas)
  */
 function fetchSupabaseToSheet() {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
@@ -265,51 +352,11 @@ function fetchSupabaseToSheet() {
     }
 
     sheet.getRange(2, 1, rows.length, 7).setValues(rows);
-    sheet.getRange(2, 4, rows.length, 3).setNumberFormat('"Rp"#,##0');
+    sheet.getRange(2, 4, rows.length, 3).setNumberFormat(RUPIAH_NUMBER_FORMAT);
+    sheet.getRange(2, 4, rows.length, 3).setHorizontalAlignment('right');
 
-    SpreadsheetApp.getUi().alert('Berhasil! 🎉', `Berhasil memuat ${rows.length} transaksi dari database Supabase.`, SpreadsheetApp.getUi().ButtonSet.OK);
+    SpreadsheetApp.getUi().alert('Berhasil! 🎉', `Berhasil memuat ${rows.length} transaksi dari database Supabase dengan format Rp.`, SpreadsheetApp.getUi().ButtonSet.OK);
   } catch (error) {
     SpreadsheetApp.getUi().alert('Error', error.toString(), SpreadsheetApp.getUi().ButtonSet.OK);
   }
-}
-
-/**
- * 3. MENGURUTKAN BARIS BERDASARKAN TANGGAL TERLAMA DI ATAS (ASC)
- */
-function sortTransactionsByDate() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  const lastRow = sheet.getLastRow();
-  
-  if (lastRow <= 2) return;
-
-  const range = sheet.getRange(2, 1, lastRow - 1, 7);
-  range.sort([{ column: 2, ascending: true }]);
-
-  for (let i = 2; i <= lastRow; i++) {
-    sheet.getRange(i, 1).setValue(i - 1);
-  }
-}
-
-/**
- * 4. MENGHITUNG ULANG SALDO AKUMULASI DARI ATAS KE BAWAH
- */
-function recalculateRunningBalance() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  const lastRow = sheet.getLastRow();
-
-  if (lastRow < 2) return;
-
-  const data = sheet.getRange(2, 1, lastRow - 1, 7).getValues();
-  let currentBalance = 0;
-
-  for (let i = 0; i < data.length; i++) {
-    const pemasukan = Number(data[i][3]) || 0;
-    const pengeluaran = Number(data[i][4]) || 0;
-    currentBalance = currentBalance + pemasukan - pengeluaran;
-    
-    sheet.getRange(i + 2, 6).setValue(currentBalance);
-    sheet.getRange(i + 2, 1).setValue(i + 1);
-  }
-
-  sheet.getRange(2, 4, data.length, 3).setNumberFormat('"Rp"#,##0');
 }

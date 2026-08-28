@@ -74,7 +74,7 @@ export default function App() {
       {/* Main Content Area */}
       <main 
         id="main-canvas"
-        className="md:ml-64 pt-20 md:pt-6 px-4 md:px-8 pb-8 max-w-[1200px] mx-auto w-full flex-grow flex flex-col"
+        className="md:ml-64 pt-20 md:pt-6 px-4 sm:px-6 md:px-8 lg:px-10 pb-8 w-full flex-grow flex flex-col min-h-screen"
       >
         {/* Render Tab Contents */}
         {activeTab === 'rekap' && (

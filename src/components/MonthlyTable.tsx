@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Download, ChevronDown, ChevronUp, Eye, Check } from 'lucide-react';
 import { MonthlyRecord, YearFinancialData } from '../types';
-import { formatNumberOnly } from '../data/financialData';
+import { formatRupiah, formatNumberOnly } from '../data/financialData';
 
 interface MonthlyTableProps {
   data: YearFinancialData;
@@ -147,17 +147,17 @@ export const MonthlyTable: React.FC<MonthlyTableProps> = ({ data, onSelectMonth 
                           <Eye className="w-3.5 h-3.5" />
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 lg:px-6 text-right font-medium text-[#006948]">
-                        {formatNumberOnly(m.pemasukan)}
+                      <td className="py-3.5 px-4 lg:px-6 text-right font-medium text-[#006948] whitespace-nowrap">
+                        {formatRupiah(m.pemasukan)}
                       </td>
-                      <td className="py-3.5 px-4 lg:px-6 text-right font-medium text-[#ba1a1a]">
-                        {formatNumberOnly(m.pengeluaran)}
+                      <td className="py-3.5 px-4 lg:px-6 text-right font-medium text-[#ba1a1a] whitespace-nowrap">
+                        {formatRupiah(m.pengeluaran)}
                       </td>
-                      <td className="py-3.5 px-4 lg:px-6 text-right font-medium text-[#006948]">
-                        +{formatNumberOnly(m.surplus)}
+                      <td className="py-3.5 px-4 lg:px-6 text-right font-medium text-[#006948] whitespace-nowrap">
+                        +{formatRupiah(m.surplus)}
                       </td>
-                      <td className="py-3.5 px-4 lg:px-6 text-right font-semibold text-[#191c1d]">
-                        {formatNumberOnly(m.saldoKumulatif)}
+                      <td className="py-3.5 px-4 lg:px-6 text-right font-semibold text-[#191c1d] whitespace-nowrap">
+                        {formatRupiah(m.saldoKumulatif)}
                       </td>
                     </tr>
                   );
@@ -179,8 +179,8 @@ export const MonthlyTable: React.FC<MonthlyTableProps> = ({ data, onSelectMonth 
                   <td colSpan={3} className="py-3.5 px-4 lg:px-6 text-center text-[#585f6c] text-xs italic">
                     Data direkap untuk tampilan ringkas
                   </td>
-                  <td className="py-3.5 px-4 lg:px-6 text-right font-semibold text-[#191c1d]">
-                    {formatNumberOnly(interimEndingBalance)}
+                  <td className="py-3.5 px-4 lg:px-6 text-right font-semibold text-[#191c1d] whitespace-nowrap">
+                    {formatRupiah(interimEndingBalance)}
                   </td>
                 </tr>
 
@@ -197,17 +197,17 @@ export const MonthlyTable: React.FC<MonthlyTableProps> = ({ data, onSelectMonth 
                         <Eye className="w-3.5 h-3.5" />
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 lg:px-6 text-right font-medium text-[#006948]">
-                      {formatNumberOnly(december.pemasukan)}
+                    <td className="py-3.5 px-4 lg:px-6 text-right font-medium text-[#006948] whitespace-nowrap">
+                      {formatRupiah(december.pemasukan)}
                     </td>
-                    <td className="py-3.5 px-4 lg:px-6 text-right font-medium text-[#ba1a1a]">
-                      {formatNumberOnly(december.pengeluaran)}
+                    <td className="py-3.5 px-4 lg:px-6 text-right font-medium text-[#ba1a1a] whitespace-nowrap">
+                      {formatRupiah(december.pengeluaran)}
                     </td>
-                    <td className="py-3.5 px-4 lg:px-6 text-right font-medium text-[#006948]">
-                      +{formatNumberOnly(december.surplus)}
+                    <td className="py-3.5 px-4 lg:px-6 text-right font-medium text-[#006948] whitespace-nowrap">
+                      +{formatRupiah(december.surplus)}
                     </td>
-                    <td className="py-3.5 px-4 lg:px-6 text-right font-bold text-[#191c1d]">
-                      {formatNumberOnly(december.saldoKumulatif)}
+                    <td className="py-3.5 px-4 lg:px-6 text-right font-bold text-[#191c1d] whitespace-nowrap">
+                      {formatRupiah(december.saldoKumulatif)}
                     </td>
                   </tr>
                 )}
@@ -231,17 +231,17 @@ export const MonthlyTable: React.FC<MonthlyTableProps> = ({ data, onSelectMonth 
                         <Eye className="w-3.5 h-3.5" />
                       </span>
                     </td>
-                    <td className="py-3 px-4 lg:px-6 text-right font-medium text-[#006948]">
-                      {formatNumberOnly(m.pemasukan)}
+                    <td className="py-3 px-4 lg:px-6 text-right font-medium text-[#006948] whitespace-nowrap">
+                      {formatRupiah(m.pemasukan)}
                     </td>
-                    <td className="py-3 px-4 lg:px-6 text-right font-medium text-[#ba1a1a]">
-                      {formatNumberOnly(m.pengeluaran)}
+                    <td className="py-3 px-4 lg:px-6 text-right font-medium text-[#ba1a1a] whitespace-nowrap">
+                      {formatRupiah(m.pengeluaran)}
                     </td>
-                    <td className="py-3 px-4 lg:px-6 text-right font-medium text-[#006948]">
-                      +{formatNumberOnly(m.surplus)}
+                    <td className="py-3 px-4 lg:px-6 text-right font-medium text-[#006948] whitespace-nowrap">
+                      +{formatRupiah(m.surplus)}
                     </td>
-                    <td className="py-3 px-4 lg:px-6 text-right font-semibold text-[#191c1d]">
-                      {formatNumberOnly(m.saldoKumulatif)}
+                    <td className="py-3 px-4 lg:px-6 text-right font-semibold text-[#191c1d] whitespace-nowrap">
+                      {formatRupiah(m.saldoKumulatif)}
                     </td>
                   </tr>
                 );
@@ -252,17 +252,17 @@ export const MonthlyTable: React.FC<MonthlyTableProps> = ({ data, onSelectMonth 
           <tfoot className="bg-[#edeeef] font-bold text-xs sm:text-sm border-t-2 border-[#bccac0]">
             <tr id="table-footer-total-row">
               <td className="py-4 px-4 lg:px-6 text-[#191c1d]">Total {data.year}</td>
-              <td className="py-4 px-4 lg:px-6 text-right text-[#006948]">
-                {formatNumberOnly(data.totalPemasukan)}
+              <td className="py-4 px-4 lg:px-6 text-right text-[#006948] whitespace-nowrap">
+                {formatRupiah(data.totalPemasukan)}
               </td>
-              <td className="py-4 px-4 lg:px-6 text-right text-[#ba1a1a]">
-                {formatNumberOnly(data.totalPengeluaran)}
+              <td className="py-4 px-4 lg:px-6 text-right text-[#ba1a1a] whitespace-nowrap">
+                {formatRupiah(data.totalPengeluaran)}
               </td>
-              <td className="py-4 px-4 lg:px-6 text-right text-[#006948]">
-                +{formatNumberOnly(data.totalPemasukan - data.totalPengeluaran)}
+              <td className="py-4 px-4 lg:px-6 text-right text-[#006948] whitespace-nowrap">
+                +{formatRupiah(data.totalPemasukan - data.totalPengeluaran)}
               </td>
-              <td className="py-4 px-4 lg:px-6 text-right text-[#191c1d]">
-                {formatNumberOnly(data.saldoKumulatif)}
+              <td className="py-4 px-4 lg:px-6 text-right text-[#191c1d] whitespace-nowrap">
+                {formatRupiah(data.saldoKumulatif)}
               </td>
             </tr>
           </tfoot>
