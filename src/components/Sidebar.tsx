@@ -6,6 +6,7 @@ import {
   BarChart3, 
   Settings, 
   LogOut, 
+  LogIn,
   Menu, 
   X,
   Eye,

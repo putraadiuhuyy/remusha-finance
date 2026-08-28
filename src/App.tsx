@@ -27,10 +27,10 @@ export default function App() {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   
-  // User Authentication State - Default to Viewer mode
+  // User Authentication State - Always Default to Viewer mode on fresh access
   const [currentUser, setCurrentUser] = useState<AppUser>(() => {
     try {
-      const stored = localStorage.getItem('remusha_current_user');
+      const stored = sessionStorage.getItem('remusha_current_user');
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed && typeof parsed === 'object' && parsed.role) {
@@ -52,13 +52,14 @@ export default function App() {
   const handleLogin = (user: AppUser) => {
     setCurrentUser(user);
     try {
-      localStorage.setItem('remusha_current_user', JSON.stringify(user));
+      sessionStorage.setItem('remusha_current_user', JSON.stringify(user));
     } catch (e) {}
   };
 
   const handleLogout = () => {
     setCurrentUser(DEFAULT_USERS.viewer);
     try {
+      sessionStorage.removeItem('remusha_current_user');
       localStorage.removeItem('remusha_current_user');
     } catch (e) {}
     setIsLogoutModalOpen(false);

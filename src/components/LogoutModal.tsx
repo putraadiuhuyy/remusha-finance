@@ -34,10 +34,10 @@ export const LogoutModal: React.FC<LogoutModalProps> = ({ isOpen, onClose, onCon
         </div>
 
         <h3 className="text-lg font-bold text-[#191c1d] mb-1">
-          Keluar dari Sesi?
+          Kembali ke Mode Viewer?
         </h3>
         <p className="text-xs text-[#585f6c] leading-relaxed mb-6">
-          Anda akan keluar dari sesi tampilan viewer portal keuangan REMUSHA. Anda dapat masuk kembali kapan saja untuk memantau kas masjid.
+          Anda akan keluar dari sesi pengurus dan kembali ke mode Viewer (Hanya Lihat). Fitur pengelolaan dan input kas akan dinonaktifkan.
         </p>
 
         <div className="flex gap-3">
