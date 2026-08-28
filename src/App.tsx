@@ -10,9 +10,8 @@ import { SummaryCards } from './components/SummaryCards';
 import { BarChartArea } from './components/BarChartArea';
 import { MonthlyTable } from './components/MonthlyTable';
 import { MonthDetailModal } from './components/MonthDetailModal';
-import { DashboardView } from './components/DashboardView';
+import { BerandaView } from './components/BerandaView';
 import { TransactionView } from './components/TransactionView';
-import { ReportsView } from './components/ReportsView';
 import { SettingsView } from './components/SettingsView';
 import { LogoutModal } from './components/LogoutModal';
 import { LoginView, DEFAULT_USERS } from './components/LoginView';
@@ -21,7 +20,7 @@ import { financialData2027, financialData2026 } from './data/financialData';
 import { NavTab, MonthlyRecord, AppUser } from './types';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<NavTab>('rekap');
+  const [activeTab, setActiveTab] = useState<NavTab>('beranda');
   const [selectedYear, setSelectedYear] = useState<2027 | 2026>(2027);
   const [selectedMonth, setSelectedMonth] = useState<MonthlyRecord | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -153,19 +152,14 @@ export default function App() {
           </div>
         )}
 
-        {activeTab === 'dashboard' && (
-          <DashboardView
-            data={currentYearData}
+        {activeTab === 'beranda' && (
+          <BerandaView
             onNavigateToRekap={() => setActiveTab('rekap')}
           />
         )}
 
         {activeTab === 'transaksi' && (
           <TransactionView currentUser={currentUser} />
-        )}
-
-        {activeTab === 'laporan' && (
-          <ReportsView data={currentYearData} />
         )}
 
           {activeTab === 'pengaturan' && (

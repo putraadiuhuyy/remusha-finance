@@ -61,4 +61,4 @@ export interface AppUser {
   avatar?: string;
 }
 
-export type NavTab = 'dashboard' | 'transaksi' | 'rekap' | 'laporan' | 'pengaturan';
+export type NavTab = 'beranda' | 'transaksi' | 'rekap' | 'pengaturan';

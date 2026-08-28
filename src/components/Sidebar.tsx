@@ -36,10 +36,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   currentUser
 }) => {
   const navItems: { id: NavTab; label: string; icon: React.ReactNode }[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
+    { id: 'beranda', label: 'Beranda', icon: <LayoutDashboard className="w-5 h-5" /> },
     { id: 'transaksi', label: 'Transaksi', icon: <Wallet className="w-5 h-5" /> },
     { id: 'rekap', label: 'Rekap Keuangan', icon: <FileSpreadsheet className="w-5 h-5" /> },
-    { id: 'laporan', label: 'Laporan', icon: <BarChart3 className="w-5 h-5" /> },
     { id: 'pengaturan', label: 'Pengaturan', icon: <Settings className="w-5 h-5" /> },
   ];
 
