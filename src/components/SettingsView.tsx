@@ -90,7 +90,7 @@ export const SettingsView: React.FC = () => {
               onChange={(e) => setNotificationEmail(e.target.checked)}
               className="w-4 h-4 text-[#006948] rounded focus:ring-[#006948]"
             />
-            <span className="text-sm text-[#191c1d]">Terima ringkasan mutasi kas dan infaq Jumat via email</span>
+            <span className="text-sm text-[#191c1d]">Terima ringkasan mutasi keuangan via email</span>
           </label>
         </div>
 

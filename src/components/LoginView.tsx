@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  ShieldCheck, 
   LogIn, 
-  UserPlus, 
   User, 
   Lock, 
   Eye, 
@@ -10,12 +8,9 @@ import {
   X,
   Shield, 
   Coins, 
-  Users, 
-  Database, 
   Loader2, 
   AlertCircle,
-  CheckCircle2,
-  KeyRound
+  CheckCircle2
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { AppUser, UserRole } from '../types';
@@ -59,18 +54,10 @@ export const DEFAULT_USERS: { [key: string]: AppUser & { password: string; descr
 const LOGO_URL = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCfYOLZ7e9lvJ-cMzhGg05GNrj_ipiPoYC6gAgb4EDcAVsEoqU1_ayxPtS4xwkZoab9FrMPQnlRV1E7jbLeuwiOxS5kHphVKGIT0aul8ATbcFnaxSwAMsdgQ38KzRodVUoVAD4Y2-nXCpwDMioLv1pyqr4cuyGtsmsswZTxvThRgBaZZ3_wLmj6YN9LDOb5xZdvFghW3mUjc5z5dd8CYgJxDZ1Z_WoDBu5xLayvw8bZIFUG8oLVEMHvYg';
 
 export const LoginView: React.FC<LoginViewProps> = ({ isOpen, onClose, onLogin }) => {
-  const [activeMode, setActiveMode] = useState<'login' | 'register'>('login');
-  
   // Login Form State
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  
-  // Register Form State
-  const [regName, setRegName] = useState('');
-  const [regUsername, setRegUsername] = useState('');
-  const [regPassword, setRegPassword] = useState('');
-  const [regRole, setRegRole] = useState<UserRole>('bendahara');
   
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -104,7 +91,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ isOpen, onClose, onLogin }
 
       // 1. Check Supabase Database
       if (isSupabaseConfigured) {
-        const { data: dbUser, error: dbError } = await supabase
+        const { data: dbUser } = await supabase
           .from('users')
           .select('*')
           .eq('username', trimmedUser)
@@ -177,78 +164,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ isOpen, onClose, onLogin }
     }
   };
 
-  // Register new role/sie into Supabase DB
-  const handleRegisterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-    setSuccess(null);
-
-    const cleanUsername = regUsername.trim().toLowerCase();
-    const cleanName = regName.trim();
-
-    if (!cleanName || !cleanUsername || !regPassword) {
-      setError('Semua kolom pendaftaran wajib diisi.');
-      setIsLoading(false);
-      return;
-    }
-
-    const roleLabelMap: Record<UserRole, string> = {
-      admin: 'Admin Remusha',
-      bendahara: 'Bendahara',
-      viewer: 'Viewer'
-    };
-
-    const newUserObj = {
-      name: cleanName,
-      username: cleanUsername,
-      password: regPassword,
-      role: regRole,
-      role_label: roleLabelMap[regRole]
-    };
-
-    try {
-      if (isSupabaseConfigured) {
-        const { data, error: insertError } = await supabase
-          .from('users')
-          .insert([newUserObj])
-          .select();
-
-        if (insertError) {
-          if (insertError.code === '23505') {
-            throw new Error('Username sudah terdaftar di database.');
-          }
-          console.warn('Supabase register notice, saving locally:', insertError);
-        }
-      }
-
-      // Save also to local storage
-      const localStored = localStorage.getItem('remusha_local_users');
-      const localUsers = localStored ? JSON.parse(localStored) : [];
-      localUsers.push(newUserObj);
-      localStorage.setItem('remusha_local_users', JSON.stringify(localUsers));
-
-      setSuccess('Pendaftaran berhasil! Akun telah tersimpan.');
-      
-      // Auto login after 1s
-      setTimeout(() => {
-        onLogin({
-          id: 'usr_' + Date.now(),
-          name: cleanName,
-          username: cleanUsername,
-          role: regRole,
-          roleLabel: roleLabelMap[regRole]
-        });
-        onClose();
-      }, 1000);
-
-    } catch (err: any) {
-      setError(err.message || 'Gagal mendaftarkan role/sie baru.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleSelectQuickAccount = (userKey: 'admin' | 'bendahara') => {
     setUsername(DEFAULT_USERS[userKey].username);
     setPassword('');
@@ -263,20 +178,20 @@ export const LoginView: React.FC<LoginViewProps> = ({ isOpen, onClose, onLogin }
     >
       <div 
         id="login-modal-content"
-        className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-[#e1e3e4] text-center relative z-10 animate-scale-up max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-[#e1e3e4] text-center relative z-10 animate-scale-up"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button 
           onClick={onClose}
-          className="absolute right-4 top-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+          className="absolute right-4 top-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
           aria-label="Tutup"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Brand Header */}
-        <div className="flex flex-col items-center mb-4">
+        <div className="flex flex-col items-center mb-5">
           <div className="w-14 h-14 bg-[#006948]/10 rounded-2xl flex items-center justify-center mb-2.5 shadow-inner">
             <img 
               src={LOGO_URL} 
@@ -293,190 +208,99 @@ export const LoginView: React.FC<LoginViewProps> = ({ isOpen, onClose, onLogin }
           </p>
         </div>
 
-        {/* Tab Switcher: Login vs Daftar Akun */}
-        <div className="flex items-center bg-[#f0f2f1] p-1 rounded-xl mb-4 border border-[#e1e3e4]">
-          <button
-            type="button"
-            onClick={() => { setActiveMode('login'); setError(null); setSuccess(null); }}
-            className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-              activeMode === 'login' 
-                ? 'bg-white text-[#006948] shadow-xs' 
-                : 'text-[#585f6c] hover:text-[#191c1d]'
-            }`}
-          >
-            Masuk
-          </button>
-          <button
-            type="button"
-            onClick={() => { setActiveMode('register'); setError(null); setSuccess(null); }}
-            className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-              activeMode === 'register' 
-                ? 'bg-white text-[#006948] shadow-xs' 
-                : 'text-[#585f6c] hover:text-[#191c1d]'
-            }`}
-          >
-            Daftar Akun Baru
-          </button>
-        </div>
-
         {/* Notifications */}
         {error && (
-          <div className="bg-red-50 text-red-700 p-3 rounded-xl text-xs font-semibold mb-3 border border-red-200 text-left flex items-center gap-2 animate-fade-in">
+          <div className="bg-red-50 text-red-700 p-3 rounded-xl text-xs font-semibold mb-4 border border-red-200 text-left flex items-center gap-2 animate-fade-in">
             <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
             <span>{error}</span>
           </div>
         )}
 
         {success && (
-          <div className="bg-emerald-50 text-emerald-800 p-3 rounded-xl text-xs font-semibold mb-3 border border-emerald-200 text-left flex items-center gap-2 animate-fade-in">
+          <div className="bg-emerald-50 text-emerald-800 p-3 rounded-xl text-xs font-semibold mb-4 border border-emerald-200 text-left flex items-center gap-2 animate-fade-in">
             <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
             <span>{success}</span>
           </div>
         )}
 
-        {/* FORM 1: LOGIN */}
-        {activeMode === 'login' ? (
-          <>
-            <form onSubmit={handleLoginSubmit} className="space-y-3 text-left mb-4">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-[#191c1d] flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-[#006948]" />
-                  <span>Username</span>
-                </label>
-                <input 
-                  type="text" 
-                  placeholder="adminremusha / bendahara"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#006948] transition-all"
-                  autoFocus
-                />
-              </div>
+        {/* LOGIN FORM */}
+        <form onSubmit={handleLoginSubmit} className="space-y-3.5 text-left mb-4">
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-[#191c1d] flex items-center gap-1.5">
+              <User className="w-3.5 h-3.5 text-[#006948]" />
+              <span>Username</span>
+            </label>
+            <input 
+              type="text" 
+              placeholder="adminremusha / bendahara"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#006948] transition-all"
+              autoFocus
+            />
+          </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-[#191c1d] flex items-center gap-1.5">
-                  <Lock className="w-3.5 h-3.5 text-[#006948]" />
-                  <span>Password</span>
-                </label>
-                <div className="relative">
-                  <input 
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Masukkan password akun"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-3.5 pr-10 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#006948] transition-all"
-                  />
-                  <button 
-                    type="button" 
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full mt-2 py-3 bg-[#006948] hover:bg-[#005137] text-white font-bold rounded-xl text-sm transition-all duration-200 shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-[#191c1d] flex items-center gap-1.5">
+              <Lock className="w-3.5 h-3.5 text-[#006948]" />
+              <span>Password</span>
+            </label>
+            <div className="relative">
+              <input 
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Masukkan password akun"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full pl-3.5 pr-10 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#006948] transition-all"
+              />
+              <button 
+                type="button" 
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
               >
-                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
-                <span>{isLoading ? 'Memverifikasi...' : 'Masuk Sekarang'}</span>
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
-            </form>
-
-            {/* Quick Fill Helper */}
-            <div className="pt-2 border-t border-[#e1e3e4]">
-              <p className="text-[11px] text-[#585f6c] mb-2 font-medium">Pilih akun pengurus untuk mengisi username:</p>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleSelectQuickAccount('admin')}
-                  className="p-2 bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200 rounded-xl text-left transition-all text-xs flex items-center gap-2"
-                >
-                  <Shield className="w-3.5 h-3.5 text-[#006948]" />
-                  <div>
-                    <div className="font-bold text-[#191c1d]">Admin</div>
-                    <div className="text-[10px] text-[#585f6c]">adminremusha</div>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSelectQuickAccount('bendahara')}
-                  className="p-2 bg-amber-50 hover:bg-amber-100/80 border border-amber-200 rounded-xl text-left transition-all text-xs flex items-center gap-2"
-                >
-                  <Coins className="w-3.5 h-3.5 text-amber-700" />
-                  <div>
-                    <div className="font-bold text-[#191c1d]">Bendahara</div>
-                    <div className="text-[10px] text-[#585f6c]">bendahara</div>
-                  </div>
-                </button>
-              </div>
             </div>
-          </>
-        ) : (
-          /* FORM 2: REGISTER ROLE / SIE */
-          <form onSubmit={handleRegisterSubmit} className="space-y-3 text-left mb-2 animate-fade-in">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-[#191c1d]">Nama Akun / Sie</label>
-              <input 
-                type="text" 
-                placeholder="Contoh: Bendahara 2 / Sie Sarpras"
-                value={regName}
-                onChange={(e) => setRegName(e.target.value)}
-                required
-                className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#006948] transition-all"
-              />
-            </div>
+          </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-[#191c1d]">Username Baru (Tanpa Spasi)</label>
-              <input 
-                type="text" 
-                placeholder="Contoh: bendahara2"
-                value={regUsername}
-                onChange={(e) => setRegUsername(e.target.value)}
-                required
-                className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#006948] transition-all"
-              />
-            </div>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full mt-2 py-3 bg-[#006948] hover:bg-[#005137] text-white font-bold rounded-xl text-sm transition-all duration-200 shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+          >
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
+            <span>{isLoading ? 'Memverifikasi...' : 'Masuk Sekarang'}</span>
+          </button>
+        </form>
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-[#191c1d]">Password</label>
-              <input 
-                type="password" 
-                placeholder="Buat password"
-                value={regPassword}
-                onChange={(e) => setRegPassword(e.target.value)}
-                required
-                className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#006948] transition-all"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-[#191c1d]">Tingkat Hak Akses</label>
-              <select
-                value={regRole}
-                onChange={(e) => setRegRole(e.target.value as UserRole)}
-                className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#006948] transition-all font-medium"
-              >
-                <option value="admin">Admin Remusha (Akses Penuh)</option>
-                <option value="bendahara">Bendahara (Input &amp; Kelola Transaksi)</option>
-                <option value="viewer">Viewer (Hanya Lihat)</option>
-              </select>
-            </div>
-
+        {/* Quick Fill Helper */}
+        <div className="pt-3 border-t border-[#e1e3e4]">
+          <p className="text-[11px] text-[#585f6c] mb-2 font-medium">Pilih akun pengurus untuk mengisi username:</p>
+          <div className="grid grid-cols-2 gap-2">
             <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full mt-2 py-3 bg-[#006948] hover:bg-[#005137] text-white font-bold rounded-xl text-sm transition-all duration-200 shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+              type="button"
+              onClick={() => handleSelectQuickAccount('admin')}
+              className="p-2.5 bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200 rounded-xl text-left transition-all text-xs flex items-center gap-2 cursor-pointer"
             >
-              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
-              <span>{isLoading ? 'Mendaftarkan...' : 'Daftar Akun'}</span>
+              <Shield className="w-4 h-4 text-[#006948] shrink-0" />
+              <div className="overflow-hidden">
+                <div className="font-bold text-[#191c1d] truncate">Admin</div>
+                <div className="text-[10px] text-[#585f6c] truncate">adminremusha</div>
+              </div>
             </button>
-          </form>
-        )}
+            <button
+              type="button"
+              onClick={() => handleSelectQuickAccount('bendahara')}
+              className="p-2.5 bg-amber-50 hover:bg-amber-100/80 border border-amber-200 rounded-xl text-left transition-all text-xs flex items-center gap-2 cursor-pointer"
+            >
+              <Coins className="w-4 h-4 text-amber-700 shrink-0" />
+              <div className="overflow-hidden">
+                <div className="font-bold text-[#191c1d] truncate">Bendahara</div>
+                <div className="text-[10px] text-[#585f6c] truncate">bendahara</div>
+              </div>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
