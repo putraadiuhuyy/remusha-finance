@@ -25,14 +25,15 @@ export default function App() {
   const [selectedMonth, setSelectedMonth] = useState<MonthlyRecord | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   
-  // User Authentication State
-  const [currentUser, setCurrentUser] = useState<AppUser | null>(() => {
+  // User Authentication State - Default to Viewer mode
+  const [currentUser, setCurrentUser] = useState<AppUser>(() => {
     try {
       const stored = localStorage.getItem('remusha_current_user');
-      return stored ? JSON.parse(stored) : DEFAULT_USERS.admin; // Default start logged in as Admin for easy testing, or can be null
+      return stored ? JSON.parse(stored) : DEFAULT_USERS.viewer;
     } catch (e) {
-      return DEFAULT_USERS.admin;
+      return DEFAULT_USERS.viewer;
     }
   });
 
@@ -46,17 +47,12 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    setCurrentUser(null);
+    setCurrentUser(DEFAULT_USERS.viewer);
     try {
       localStorage.removeItem('remusha_current_user');
     } catch (e) {}
     setIsLogoutModalOpen(false);
   };
-
-  // If not logged in, render the Login Screen
-  if (!currentUser) {
-    return <LoginView onLogin={handleLogin} />;
-  }
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] text-[#191c1d] flex flex-col antialiased">
@@ -65,6 +61,7 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onLogoutClick={() => setIsLogoutModalOpen(true)}
+        onLoginClick={() => setIsLoginModalOpen(true)}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
         currentUser={currentUser}
@@ -183,6 +180,13 @@ export default function App() {
         isOpen={isLogoutModalOpen}
         onClose={() => setIsLogoutModalOpen(false)}
         onConfirm={handleLogout}
+      />
+
+      {/* Login Modal */}
+      <LoginView
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onLogin={handleLogin}
       />
     </div>
   );

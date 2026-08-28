@@ -19,17 +19,17 @@ export const BerandaView: React.FC<BerandaViewProps> = ({ onNavigateToRekap }) =
         <div className="relative z-10 px-6 py-16 md:py-24 md:px-12 flex flex-col items-center text-center">
           <div className="inline-flex items-center gap-1.5 bg-white/10 px-4 py-1.5 rounded-full text-sm font-semibold text-emerald-50 backdrop-blur-md mb-6 border border-white/20">
             <ShieldCheck className="w-4 h-4" />
-            <span>Portal Keuangan Masjid Terbuka</span>
+            <span>Portal Keuangan Musholla Terbuka</span>
           </div>
-          
+
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-6 max-w-3xl leading-tight">
-            Transparansi Kas Masjid Untuk Kepercayaan Umat
+            Transparansi Kas Musholla Untuk Kepercayaan Warga
           </h1>
-          
+
           <p className="text-emerald-100 text-lg md:text-xl max-w-2xl mb-10 leading-relaxed font-medium">
-            Platform modern pengelolaan keuangan REMUSHA. Membangun kepercayaan melalui laporan keuangan yang terbuka, akurat, dan dapat diakses oleh seluruh jamaah kapan saja.
+            Platform modern pengelolaan keuangan REMUSHA. Membangun kepercayaan melalui laporan keuangan yang terbuka, akurat, dan dapat diakses oleh seluruh donatur kapan saja.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4">
             <button
               onClick={onNavigateToRekap}
@@ -50,7 +50,7 @@ export const BerandaView: React.FC<BerandaViewProps> = ({ onNavigateToRekap }) =
           </div>
           <h3 className="text-xl font-bold text-[#191c1d] mb-3">Pencatatan Rapi</h3>
           <p className="text-[#585f6c] leading-relaxed text-sm">
-            Setiap infaq, sedekah, dan pengeluaran dicatat secara rinci dan terstruktur untuk memudahkan pelacakan arus kas.
+            Setiap pemasukan dan pengeluaran dicatat secara rinci dan terstruktur untuk memudahkan pelacakan arus kas.
           </p>
         </div>
 
@@ -70,7 +70,7 @@ export const BerandaView: React.FC<BerandaViewProps> = ({ onNavigateToRekap }) =
           </div>
           <h3 className="text-xl font-bold text-[#191c1d] mb-3">Akuntabel & Amanah</h3>
           <p className="text-[#585f6c] leading-relaxed text-sm">
-            Membangun kepercayaan jamaah dengan sistem tata kelola keuangan yang transparan, dapat dipertanggungjawabkan dan diaudit.
+            Membangun kepercayaan donatur dan warga dengan sistem tata kelola keuangan yang transparan, dapat dipertanggungjawabkan dan diaudit.
           </p>
         </div>
       </div>
@@ -78,9 +78,9 @@ export const BerandaView: React.FC<BerandaViewProps> = ({ onNavigateToRekap }) =
       {/* About/CTA Section */}
       <div className="bg-[#f8f9fa] border border-[#e1e3e4] p-8 md:p-12 rounded-3xl flex flex-col md:flex-row items-center gap-8 justify-between">
         <div className="max-w-xl">
-          <h2 className="text-2xl font-bold text-[#191c1d] mb-4">Amanah Dari Jamaah, Untuk Umat</h2>
+          <h2 className="text-2xl font-bold text-[#191c1d] mb-4">Amanah Dari Donatur dan Warga, Untuk Musholla</h2>
           <p className="text-[#585f6c] leading-relaxed text-sm">
-            Sistem ini disiapkan untuk mempermudah operasional kepengurusan di masa depan (2027 dan seterusnya). Kami berkomitmen menjaga seluruh amanah dari para donatur dan jamaah demi kemakmuran masjid.
+            Sistem ini disiapkan untuk mempermudah operasional kepengurusan di masa depan (2027 dan seterusnya). Kami berkomitmen menjaga seluruh amanah dari para donatur dan jamaah demi kemakmuran Musholla.
           </p>
         </div>
         <div className="shrink-0">

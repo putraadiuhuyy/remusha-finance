@@ -21,45 +21,8 @@ import { SheetTransaction, AppUser } from '../types';
 import { TransactionForm } from './TransactionForm';
 import { formatRupiah } from '../data/financialData';
 
-// Initial default seed data in ascending chronological order (older dates on top)
-const defaultTransactions: SheetTransaction[] = [
-  {
-    id: 1,
-    tanggal: '2024-01-05',
-    keterangan: 'Saldo Awal Tahun & Infaq Kotak Utama',
-    pemasukan: 5000000,
-    pengeluaran: 0,
-    saldo: 5000000,
-    pj: 'Ust. Ahmad'
-  },
-  {
-    id: 2,
-    tanggal: '2024-01-12',
-    keterangan: 'Operasional Listrik & Air Masjid',
-    pemasukan: 0,
-    pengeluaran: 750000,
-    saldo: 4250000,
-    pj: 'H. Syarif'
-  },
-  {
-    id: 3,
-    tanggal: '2024-01-19',
-    keterangan: 'Infaq Jumat Berkah & Sedekah Subuh',
-    pemasukan: 3200000,
-    pengeluaran: 0,
-    saldo: 7450000,
-    pj: 'Ust. Ahmad'
-  },
-  {
-    id: 4,
-    tanggal: '2024-01-26',
-    keterangan: 'Honor Kebersihan & Marbot',
-    pemasukan: 0,
-    pengeluaran: 1500000,
-    saldo: 5950000,
-    pj: 'H. Syarif'
-  }
-];
+// Initial default seed data (empty for fresh start)
+const defaultTransactions: SheetTransaction[] = [];
 
 interface TransactionViewProps {
   currentUser?: AppUser | null;

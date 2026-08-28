@@ -20,6 +20,7 @@ interface SidebarProps {
   activeTab: NavTab;
   setActiveTab: (tab: NavTab) => void;
   onLogoutClick: () => void;
+  onLoginClick: () => void;
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (open: boolean) => void;
   currentUser?: AppUser | null;
@@ -31,6 +32,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   setActiveTab,
   onLogoutClick,
+  onLoginClick,
   isMobileMenuOpen,
   setIsMobileMenuOpen,
   currentUser
@@ -148,17 +150,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </nav>
 
             <div className="pt-4 border-t border-[#edeeef]">
-              <button
-                id="mobile-logout-btn"
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  onLogoutClick();
-                }}
-                className="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm text-[#ba1a1a] hover:bg-[#ffdad6]/40 rounded-xl transition-colors font-medium"
-              >
-                <LogOut className="w-5 h-5" />
-                <span>Ganti Akun / Logout</span>
-              </button>
+              {currentUser?.role === 'viewer' ? (
+                <button
+                  id="mobile-login-btn"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onLoginClick();
+                  }}
+                  className="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm text-[#006948] bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-colors font-bold border border-emerald-200"
+                >
+                  <LogIn className="w-5 h-5" />
+                  <span>Login Pengurus</span>
+                </button>
+              ) : (
+                <button
+                  id="mobile-logout-btn"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onLogoutClick();
+                  }}
+                  className="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm text-[#ba1a1a] hover:bg-[#ffdad6]/40 rounded-xl transition-colors font-medium"
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span>Keluar ke Mode Viewer</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -238,14 +254,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <span className="text-[11px] text-[#585f6c] font-medium">Kas Terbuka Transparan</span>
           </div>
 
-          <button
-            id="desktop-logout-btn"
-            onClick={onLogoutClick}
-            className="flex items-center gap-3 text-[#585f6c] hover:text-[#ba1a1a] hover:bg-[#ffdad6]/30 px-3.5 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium cursor-pointer"
-          >
-            <LogOut className="w-5 h-5" />
-            <span>Ganti Akun / Logout</span>
-          </button>
+          {currentUser?.role === 'viewer' ? (
+            <button
+              id="desktop-login-btn"
+              onClick={onLoginClick}
+              className="flex items-center justify-center gap-2 text-white bg-[#006948] hover:bg-[#005137] px-3.5 py-2.5 rounded-xl transition-all duration-200 text-xs font-bold shadow-xs cursor-pointer"
+            >
+              <LogIn className="w-4 h-4" />
+              <span>Login Pengurus</span>
+            </button>
+          ) : (
+            <button
+              id="desktop-logout-btn"
+              onClick={onLogoutClick}
+              className="flex items-center gap-3 text-[#585f6c] hover:text-[#ba1a1a] hover:bg-[#ffdad6]/30 px-3.5 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium cursor-pointer"
+            >
+              <LogOut className="w-5 h-5" />
+              <span>Keluar ke Mode Viewer</span>
+            </button>
+          )}
         </div>
       </aside>
     </>
