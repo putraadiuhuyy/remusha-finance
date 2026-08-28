@@ -74,11 +74,12 @@ export default function App() {
       {/* Main Content Area */}
       <main 
         id="main-canvas"
-        className="md:ml-64 pt-20 md:pt-6 px-4 sm:px-6 md:px-8 lg:px-10 pb-8 w-full max-w-[1200px] mx-auto flex-grow flex flex-col min-h-screen"
+        className="md:ml-64 pt-20 md:pt-6 px-4 sm:px-6 md:px-8 lg:px-10 pb-8 flex-grow flex flex-col min-h-screen"
       >
-        {/* Render Tab Contents */}
-        {activeTab === 'rekap' && (
-          <div id="rekap-keuangan-screen" className="animate-fade-in flex-grow flex flex-col">
+        <div className="w-full max-w-[1100px] mx-auto flex-grow flex flex-col">
+          {/* Render Tab Contents */}
+          {activeTab === 'rekap' && (
+            <div id="rekap-keuangan-screen" className="animate-fade-in flex-grow flex flex-col">
             {/* Header Area */}
             <header className="mb-6 flex justify-between items-end flex-wrap gap-4">
               <div>
@@ -167,9 +168,10 @@ export default function App() {
           <ReportsView data={currentYearData} />
         )}
 
-        {activeTab === 'pengaturan' && (
-          <SettingsView />
-        )}
+          {activeTab === 'pengaturan' && (
+            <SettingsView />
+          )}
+        </div>
 
         {/* Global Footer */}
         <Footer />
