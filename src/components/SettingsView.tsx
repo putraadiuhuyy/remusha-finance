@@ -44,7 +44,7 @@ export const SettingsView: React.FC = () => {
           </div>
           <div className="flex justify-between items-center">
             <span className="text-[#585f6c]">Izin Edit & Rekonsiliasi:</span>
-            <span className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded">Hanya Bendahara / Takmir Inti</span>
+            <span className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded">Hanya Admin / Bendahara</span>
           </div>
         </div>
       </div>
@@ -84,11 +84,11 @@ export const SettingsView: React.FC = () => {
 
         <div className="pt-2">
           <label className="flex items-center gap-3 cursor-pointer">
-            <input 
-              type="checkbox" 
-              checked={notificationEmail} 
+            <input
+              type="checkbox"
+              checked={notificationEmail}
               onChange={(e) => setNotificationEmail(e.target.checked)}
-              className="w-4 h-4 text-[#006948] rounded focus:ring-[#006948]" 
+              className="w-4 h-4 text-[#006948] rounded focus:ring-[#006948]"
             />
             <span className="text-sm text-[#191c1d]">Terima ringkasan mutasi kas dan infaq Jumat via email</span>
           </label>

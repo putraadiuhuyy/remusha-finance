@@ -15,10 +15,10 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ data }) => {
   };
 
   const quarters = [
-    { name: 'Kuartal I (Jan - Mar)', income: 28000000, expense: 16500000, surplus: 11500000 },
-    { name: 'Kuartal II (Apr - Jun)', income: 31600000, expense: 20200000, surplus: 11400000 },
-    { name: 'Kuartal III (Jul - Sep)', income: 30750000, expense: 18650000, surplus: 12100000 },
-    { name: 'Kuartal IV (Okt - Des)', income: 35100000, expense: 28850000, surplus: 6250000 },
+    { name: 'Kuartal I (Jan - Mar)', income: 0, expense: 0, surplus: 0 },
+    { name: 'Kuartal II (Apr - Jun)', income: 0, expense: 0, surplus: 0 },
+    { name: 'Kuartal III (Jul - Sep)', income: 0, expense: 0, surplus: 0 },
+    { name: 'Kuartal IV (Okt - Des)', income: 0, expense: 0, surplus: 0 },
   ];
 
   return (

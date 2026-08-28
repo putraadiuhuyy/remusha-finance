@@ -19,17 +19,13 @@ interface DashboardViewProps {
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ data, onNavigateToRekap }) => {
   const fundAllocations = [
-    { name: 'Kas Operasional & Utilitas', amount: 18450000, target: 20000000, color: 'bg-emerald-500', desc: 'Listrik, air, kebersihan, honor marbot' },
-    { name: 'Kas Santunan Yatim & Dhuafa', amount: 12800000, target: 15000000, color: 'bg-teal-500', desc: 'Penyaluran ZIS & sembako bulanan' },
-    { name: 'Kas Pemeliharaan & Renovasi', amount: 7500000, target: 10000000, color: 'bg-blue-500', desc: 'Pengadaan karpet shaf & kanopi' },
-    { name: 'Kas Pendidikan TPQ & Remaja', amount: 2500000, target: 5000000, color: 'bg-indigo-500', desc: 'Insentif guru ngaji & gebyar santri' },
+    { name: 'Kas Operasional & Utilitas', amount: 0, target: 20000000, color: 'bg-emerald-500', desc: 'Listrik, air, kebersihan, honor marbot' },
+    { name: 'Kas Santunan Yatim & Dhuafa', amount: 0, target: 15000000, color: 'bg-teal-500', desc: 'Penyaluran ZIS & sembako bulanan' },
+    { name: 'Kas Pemeliharaan & Renovasi', amount: 0, target: 10000000, color: 'bg-blue-500', desc: 'Pengadaan karpet shaf & kanopi' },
+    { name: 'Kas Pendidikan TPQ & Remaja', amount: 0, target: 5000000, color: 'bg-indigo-500', desc: 'Insentif guru ngaji & gebyar santri' },
   ];
 
-  const upcomingEvents = [
-    { title: 'Kajian Rutin Ahad Subuh', date: 'Ahad Ini, 05:30 WIB', speaker: 'Ustadz Hilman Fauzi', location: 'Ruang Utama Masjid' },
-    { title: 'Penyaluran Santunan Yatim', date: 'Jumat Depan, 16:00 WIB', speaker: 'Tim Sosial Remusha', location: 'Teras Serbaguna' },
-    { title: 'Kerja Bakti Bersih Kubah & Karpet', date: 'Ahad Depan, 07:00 WIB', speaker: 'Seluruh Jamaah & Remaja', location: 'Area Masjid' },
-  ];
+  const upcomingEvents: { title: string; date: string; speaker: string; location: string }[] = [];
 
   return (
     <div id="dashboard-view" className="space-y-6 animate-fade-in">
@@ -50,7 +46,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ data, onNavigateTo
             onClick={onNavigateToRekap}
             className="bg-white text-[#006948] hover:bg-emerald-50 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 shadow-sm inline-flex items-center gap-1.5"
           >
-            <span>Lihat Rekap Tahunan 2024</span>
+            <span>Lihat Rekap Tahunan {data.year}</span>
             <TrendingUp className="w-4 h-4" />
           </button>
         </div>
@@ -90,8 +86,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ data, onNavigateTo
             <span className="text-xs font-medium text-[#585f6c]">Jamaah Aktif Infaq</span>
             <Users className="w-4 h-4 text-blue-600" />
           </div>
-          <p className="text-xl font-bold text-[#191c1d]">450+ KK</p>
-          <span className="text-[11px] text-[#585f6c]">Wilayah RW 01 - RW 06</span>
+          <p className="text-xl font-bold text-[#191c1d]">0 KK</p>
+          <span className="text-[11px] text-[#585f6c]">-</span>
         </div>
       </div>
 
@@ -104,7 +100,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ data, onNavigateTo
 
           <div className="space-y-4">
             {fundAllocations.map((fund, idx) => {
-              const percent = Math.min(100, Math.round((fund.amount / data.saldoKumulatif) * 100));
+              const percent = Math.min(100, Math.round((fund.amount / (data.saldoKumulatif || 1)) * 100));
               return (
                 <div key={idx} className="p-3.5 bg-[#f8f9fa] rounded-xl border border-[#edeeef]">
                   <div className="flex justify-between items-center mb-1">
@@ -138,16 +134,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ data, onNavigateTo
               <CalendarCheck className="w-5 h-5 text-[#006948]" />
             </div>
             <div className="space-y-3">
-              {upcomingEvents.map((evt, idx) => (
-                <div key={idx} className="p-3.5 border border-[#e1e3e4] rounded-xl hover:bg-[#f8f9fa] transition-colors">
-                  <span className="text-xs font-semibold text-[#006948] block mb-0.5">{evt.date}</span>
-                  <h4 className="font-bold text-sm text-[#191c1d]">{evt.title}</h4>
-                  <div className="flex items-center justify-between text-xs text-[#585f6c] mt-2">
-                    <span>{evt.speaker}</span>
-                    <span className="bg-[#f3f4f5] px-2 py-0.5 rounded text-[11px]">{evt.location}</span>
+              {upcomingEvents.length === 0 ? (
+                <div className="text-sm text-[#585f6c] py-4 text-center">Belum ada agenda</div>
+              ) : (
+                upcomingEvents.map((evt, idx) => (
+                  <div key={idx} className="p-3.5 border border-[#e1e3e4] rounded-xl hover:bg-[#f8f9fa] transition-colors">
+                    <span className="text-xs font-semibold text-[#006948] block mb-0.5">{evt.date}</span>
+                    <h4 className="font-bold text-sm text-[#191c1d]">{evt.title}</h4>
+                    <div className="flex items-center justify-between text-xs text-[#585f6c] mt-2">
+                      <span>{evt.speaker}</span>
+                      <span className="bg-[#f3f4f5] px-2 py-0.5 rounded text-[11px]">{evt.location}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
