@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
   password TEXT NOT NULL,
   name TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'viewer', -- 'admin', 'bendahara', 'viewer'
-  role_label TEXT NOT NULL DEFAULT 'Jamaah (Viewer)',
+  role_label TEXT NOT NULL DEFAULT 'Anggota Remusha (Viewer)',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -43,9 +43,9 @@ USING (true);
 -- Masukkan data akun awal ke database Supabase
 INSERT INTO users (username, password, name, role, role_label)
 VALUES 
-  ('admin', 'admin', 'Ust. H. Ahmad Fauzi', 'admin', 'Ketua Takmir / Administrator'),
-  ('bendahara', 'bendahara', 'H. Syarifuddin, SE', 'bendahara', 'Bendahara Kas'),
-  ('jamaah', 'jamaah', 'Jamaah Masjid', 'viewer', 'Jamaah (Mode Transparansi)')
+  ('adminremusha', 'remusha0405', 'Putra Adi', 'admin', 'Administrator'),
+  ('bendahara', 'remusha0405', 'Bendahara', 'bendahara', 'Bendahara'),
+  ('viewer', 'viewer', 'Viewer', 'viewer', 'Viewer')
 ON CONFLICT (username) DO UPDATE 
 SET password = EXCLUDED.password, name = EXCLUDED.name, role = EXCLUDED.role, role_label = EXCLUDED.role_label;
 
