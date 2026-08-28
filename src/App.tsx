@@ -31,10 +31,20 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<AppUser>(() => {
     try {
       const stored = localStorage.getItem('remusha_current_user');
-      return stored ? JSON.parse(stored) : DEFAULT_USERS.viewer;
-    } catch (e) {
-      return DEFAULT_USERS.viewer;
-    }
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === 'object' && parsed.role) {
+          return {
+            id: parsed.id || 'usr_viewer',
+            name: parsed.name || 'Viewer',
+            username: parsed.username || 'viewer',
+            role: parsed.role || 'viewer',
+            roleLabel: parsed.roleLabel || 'Viewer'
+          };
+        }
+      }
+    } catch (e) {}
+    return DEFAULT_USERS.viewer;
   });
 
   const currentYearData = selectedYear === 2027 ? financialData2027 : financialData2026;
@@ -87,7 +97,7 @@ export default function App() {
                 <div className="inline-flex items-center gap-1.5 bg-[#edeeef] px-2.5 py-1 rounded-md border border-[#bccac0]/40 mt-1">
                   <Eye className="w-3.5 h-3.5 text-[#585f6c]" />
                   <span className="text-xs font-semibold text-[#585f6c]">
-                    Login Sebagai: <strong>{currentUser.roleLabel}</strong>
+                    Login Sebagai: <strong>{currentUser?.roleLabel || 'Viewer'}</strong>
                   </span>
                 </div>
 

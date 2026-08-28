@@ -207,17 +207,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="mb-4 p-3 bg-[#f8f9fa] rounded-2xl border border-[#e1e3e4] text-left">
             <div className="flex items-center gap-2.5 mb-1.5">
               <div className="w-7 h-7 rounded-full bg-[#006948] text-white flex items-center justify-center font-bold text-xs">
-                {currentUser.name.charAt(0)}
+                {(currentUser.name || 'Viewer').charAt(0)}
               </div>
               <div className="overflow-hidden">
-                <h4 className="text-xs font-bold text-[#191c1d] truncate">{currentUser.name}</h4>
-                <p className="text-[10px] text-[#585f6c] truncate">@{currentUser.username}</p>
+                <h4 className="text-xs font-bold text-[#191c1d] truncate">{currentUser.name || 'Viewer'}</h4>
+                <p className="text-[10px] text-[#585f6c] truncate">@{currentUser.username || 'viewer'}</p>
               </div>
             </div>
             <div className="flex items-center gap-1 mt-1">
               <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getRoleBadge(currentUser.role)}`}>
                 {getRoleIcon(currentUser.role)}
-                <span>{currentUser.roleLabel}</span>
+                <span>{currentUser.roleLabel || 'Viewer'}</span>
               </span>
             </div>
           </div>
