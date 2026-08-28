@@ -1,0 +1,6 @@
+{
+  "name": "REMUSHA Finance",
+  "description": "Aplikasi Rekap Keuangan Tahunan REMUSHA Finance untuk pemantauan pemasukan, pengeluaran, dan saldo kas masjid secara transparan.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
