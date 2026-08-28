@@ -170,25 +170,24 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ lastBalance, o
           <button
             type="button"
             onClick={() => setAutoCalculateSaldo(!autoCalculateSaldo)}
-            className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all ${
-              autoCalculateSaldo 
-                ? 'bg-emerald-50 text-emerald-800 border-emerald-200 shadow-xs' 
+            className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all ${autoCalculateSaldo
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-200 shadow-xs'
                 : 'bg-gray-100 text-gray-600 border-gray-200'
-            }`}
+              }`}
           >
             <Calculator className="w-3.5 h-3.5" />
             <span>{autoCalculateSaldo ? 'Hitung Saldo Otomatis: ON' : 'Saldo Manual'}</span>
           </button>
         </div>
       </div>
-      
+
       {error && (
         <div className="bg-red-50 text-red-700 p-3.5 rounded-xl text-xs font-medium mb-4 border border-red-200 flex items-center gap-2 animate-fade-in">
           <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
           <span>{error}</span>
         </div>
       )}
-      
+
       {success && (
         <div className="bg-emerald-50 text-emerald-800 p-3.5 rounded-xl text-xs font-medium mb-4 border border-emerald-200 flex items-center gap-2 animate-fade-in">
           <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
@@ -198,14 +197,14 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ lastBalance, o
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          
+
           {/* Tanggal */}
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-[#191c1d]">
               Tanggal <span className="text-red-500">*</span>
             </label>
-            <input 
-              type="date" 
+            <input
+              type="date"
               name="tanggal"
               value={formData.tanggal}
               onChange={handleChange}
@@ -219,13 +218,13 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ lastBalance, o
             <label className="text-xs font-bold text-[#191c1d]">
               Nama / Keterangan <span className="text-red-500">*</span>
             </label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               name="keterangan"
               value={formData.keterangan}
               onChange={handleChange}
               required
-              placeholder="Contoh: Kotak Amal Jumat / Pembelian Sound System"
+              placeholder="Contoh: Kotak Amal / Pembelian Konsumsi"
               className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#006948] transition-all"
             />
           </div>
@@ -237,8 +236,8 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ lastBalance, o
             </label>
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">Rp</span>
-              <input 
-                type="number" 
+              <input
+                type="number"
                 name="pemasukan"
                 value={formData.pemasukan}
                 onChange={handleChange}
@@ -256,8 +255,8 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ lastBalance, o
             </label>
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">Rp</span>
-              <input 
-                type="number" 
+              <input
+                type="number"
                 name="pengeluaran"
                 value={formData.pengeluaran}
                 onChange={handleChange}
@@ -282,8 +281,8 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ lastBalance, o
             </div>
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">Rp</span>
-              <input 
-                type="number" 
+              <input
+                type="number"
                 name="saldo"
                 value={formData.saldo}
                 onChange={handleChange}
@@ -298,13 +297,13 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({ lastBalance, o
             <label className="text-xs font-bold text-[#191c1d]">
               Penanggung Jawab (PJ) <span className="text-red-500">*</span>
             </label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               name="pj"
               value={formData.pj}
               onChange={handleChange}
               required
-              placeholder="Contoh: Ust. Ahmad Fauzi / Bendahara Takmir"
+              placeholder="Contoh: Nur Akhsan"
               className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#006948] transition-all"
             />
           </div>

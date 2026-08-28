@@ -17,12 +17,12 @@ import { SettingsView } from './components/SettingsView';
 import { LogoutModal } from './components/LogoutModal';
 import { LoginView, DEFAULT_USERS } from './components/LoginView';
 import { Footer } from './components/Footer';
-import { financialData2024, financialData2023 } from './data/financialData';
+import { financialData2027, financialData2026 } from './data/financialData';
 import { NavTab, MonthlyRecord, AppUser } from './types';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('rekap');
-  const [selectedYear, setSelectedYear] = useState<2024 | 2023>(2024);
+  const [selectedYear, setSelectedYear] = useState<2027 | 2026>(2027);
   const [selectedMonth, setSelectedMonth] = useState<MonthlyRecord | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
@@ -37,7 +37,7 @@ export default function App() {
     }
   });
 
-  const currentYearData = selectedYear === 2024 ? financialData2024 : financialData2023;
+  const currentYearData = selectedYear === 2027 ? financialData2027 : financialData2026;
 
   const handleLogin = (user: AppUser) => {
     setCurrentUser(user);
@@ -106,26 +106,26 @@ export default function App() {
                 className="flex items-center bg-[#f3f4f5] rounded-xl p-1 border border-[#e1e3e4]"
               >
                 <button
-                  id="btn-year-2024"
-                  onClick={() => setSelectedYear(2024)}
+                  id="btn-year-2027"
+                  onClick={() => setSelectedYear(2027)}
                   className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-200 ${
-                    selectedYear === 2024
+                    selectedYear === 2027
                       ? 'bg-white shadow-xs text-[#191c1d]'
                       : 'text-[#585f6c] hover:text-[#191c1d]'
                   }`}
                 >
-                  2024
+                  2027
                 </button>
                 <button
-                  id="btn-year-2023"
-                  onClick={() => setSelectedYear(2023)}
+                  id="btn-year-2026"
+                  onClick={() => setSelectedYear(2026)}
                   className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-200 ${
-                    selectedYear === 2023
+                    selectedYear === 2026
                       ? 'bg-white shadow-xs text-[#191c1d]'
                       : 'text-[#585f6c] hover:text-[#191c1d]'
                   }`}
                 >
-                  2023
+                  2026
                 </button>
               </div>
             </header>
