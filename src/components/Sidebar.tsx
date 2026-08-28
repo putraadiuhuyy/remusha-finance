@@ -9,9 +9,12 @@ import {
   Menu, 
   X,
   Eye,
+  Shield,
+  Coins,
+  Users,
   Building2
 } from 'lucide-react';
-import { NavTab } from '../types';
+import { NavTab, AppUser } from '../types';
 
 interface SidebarProps {
   activeTab: NavTab;
@@ -19,6 +22,7 @@ interface SidebarProps {
   onLogoutClick: () => void;
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (open: boolean) => void;
+  currentUser?: AppUser | null;
 }
 
 const LOGO_URL = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCfYOLZ7e9lvJ-cMzhGg05GNrj_ipiPoYC6gAgb4EDcAVsEoqU1_ayxPtS4xwkZoab9FrMPQnlRV1E7jbLeuwiOxS5kHphVKGIT0aul8ATbcFnaxSwAMsdgQ38KzRodVUoVAD4Y2-nXCpwDMioLv1pyqr4cuyGtsmsswZTxvThRgBaZZ3_wLmj6YN9LDOb5xZdvFghW3mUjc5z5dd8CYgJxDZ1Z_WoDBu5xLayvw8bZIFUG8oLVEMHvYg';
@@ -29,6 +33,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onLogoutClick,
   isMobileMenuOpen,
   setIsMobileMenuOpen,
+  currentUser
 }) => {
   const navItems: { id: NavTab; label: string; icon: React.ReactNode }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
@@ -37,6 +42,28 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'laporan', label: 'Laporan', icon: <BarChart3 className="w-5 h-5" /> },
     { id: 'pengaturan', label: 'Pengaturan', icon: <Settings className="w-5 h-5" /> },
   ];
+
+  const getRoleIcon = (role?: string) => {
+    switch (role) {
+      case 'admin':
+        return <Shield className="w-3 h-3 text-emerald-700" />;
+      case 'bendahara':
+        return <Coins className="w-3 h-3 text-amber-700" />;
+      default:
+        return <Users className="w-3 h-3 text-blue-700" />;
+    }
+  };
+
+  const getRoleBadge = (role?: string) => {
+    switch (role) {
+      case 'admin':
+        return 'bg-emerald-100 text-emerald-800 border-emerald-200';
+      case 'bendahara':
+        return 'bg-amber-100 text-amber-800 border-amber-200';
+      default:
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+    }
+  };
 
   return (
     <>
@@ -48,13 +75,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             alt="REMUSHA Finance Logo" 
             className="h-8 w-8 rounded-lg object-cover"
             onError={(e) => {
-              // Fallback if image fails
               (e.target as HTMLElement).style.display = 'none';
             }}
           />
           <div className="flex flex-col">
             <span className="font-bold text-[#006948] text-base leading-tight">REMUSHA Finance</span>
-            <span className="text-[11px] text-[#585f6c]">Mosque Member (Viewer)</span>
+            <span className="text-[11px] text-[#585f6c]">{currentUser?.name || 'Jamaah (Viewer)'}</span>
           </div>
         </div>
         <button 
@@ -84,7 +110,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <img src={LOGO_URL} alt="REMUSHA Logo" className="h-9 w-9 rounded-lg" />
                 <div>
                   <h1 className="font-extrabold text-[#006948] text-base leading-tight">REMUSHA<br />Finance</h1>
-                  <p className="text-xs text-[#585f6c]">Mosque Member (Viewer)</p>
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border mt-1 ${getRoleBadge(currentUser?.role)}`}>
+                    {getRoleIcon(currentUser?.role)}
+                    <span>{currentUser?.roleLabel || 'Viewer'}</span>
+                  </span>
                 </div>
               </div>
               <button 
@@ -129,7 +158,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className="w-full flex items-center gap-3 px-3.5 py-2.5 text-sm text-[#ba1a1a] hover:bg-[#ffdad6]/40 rounded-xl transition-colors font-medium"
               >
                 <LogOut className="w-5 h-5" />
-                <span>Logout</span>
+                <span>Ganti Akun / Logout</span>
               </button>
             </div>
           </div>
@@ -142,7 +171,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         className="hidden md:flex flex-col fixed left-0 top-0 h-screen p-4 z-40 border-r border-[#bccac0]/40 bg-white w-64 shadow-xs"
       >
         {/* Brand Header */}
-        <div className="flex items-center gap-3 mb-6 px-2">
+        <div className="flex items-center gap-3 mb-5 px-2">
           <img 
             src={LOGO_URL} 
             alt="REMUSHA Finance Logo" 
@@ -152,11 +181,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <h1 className="text-xl font-black text-[#006948] tracking-tight leading-tight">
               REMUSHA<br />Finance
             </h1>
-            <p className="text-xs text-[#585f6c] font-medium flex items-center gap-1 mt-0.5">
-              <span>Mosque Member (Viewer)</span>
+            <p className="text-[11px] text-[#585f6c] font-medium mt-0.5">
+              Portal Kas Masjid
             </p>
           </div>
         </div>
+
+        {/* User Card */}
+        {currentUser && (
+          <div className="mb-4 p-3 bg-[#f8f9fa] rounded-2xl border border-[#e1e3e4] text-left">
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <div className="w-7 h-7 rounded-full bg-[#006948] text-white flex items-center justify-center font-bold text-xs">
+                {currentUser.name.charAt(0)}
+              </div>
+              <div className="overflow-hidden">
+                <h4 className="text-xs font-bold text-[#191c1d] truncate">{currentUser.name}</h4>
+                <p className="text-[10px] text-[#585f6c] truncate">@{currentUser.username}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 mt-1">
+              <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getRoleBadge(currentUser.role)}`}>
+                {getRoleIcon(currentUser.role)}
+                <span>{currentUser.roleLabel}</span>
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Navigation items */}
         <nav className="flex flex-col gap-1.5 flex-grow">
@@ -192,10 +242,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             id="desktop-logout-btn"
             onClick={onLogoutClick}
-            className="flex items-center gap-3 text-[#585f6c] hover:text-[#ba1a1a] hover:bg-[#ffdad6]/30 px-3.5 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium"
+            className="flex items-center gap-3 text-[#585f6c] hover:text-[#ba1a1a] hover:bg-[#ffdad6]/30 px-3.5 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium cursor-pointer"
           >
             <LogOut className="w-5 h-5" />
-            <span>Logout</span>
+            <span>Ganti Akun / Logout</span>
           </button>
         </div>
       </aside>

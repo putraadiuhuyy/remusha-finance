@@ -12,10 +12,12 @@ import {
   UserCheck, 
   Calendar,
   Table as TableIcon,
-  Download
+  Download,
+  Eye,
+  ShieldAlert
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { SheetTransaction } from '../types';
+import { SheetTransaction, AppUser } from '../types';
 import { TransactionForm } from './TransactionForm';
 import { formatRupiah } from '../data/financialData';
 
@@ -59,7 +61,12 @@ const defaultTransactions: SheetTransaction[] = [
   }
 ];
 
-export const TransactionView: React.FC = () => {
+interface TransactionViewProps {
+  currentUser?: AppUser | null;
+}
+
+export const TransactionView: React.FC<TransactionViewProps> = ({ currentUser }) => {
+  const isViewer = currentUser?.role === 'viewer';
   const [transactions, setTransactions] = useState<SheetTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -89,7 +96,6 @@ export const TransactionView: React.FC = () => {
           setTransactions(data);
           setUsingDatabase(true);
         } else {
-          // Table exists but is empty, try seeding or loading local
           loadLocalData();
           setUsingDatabase(true);
         }
@@ -109,7 +115,6 @@ export const TransactionView: React.FC = () => {
       const stored = localStorage.getItem('remusha_local_transactions');
       if (stored) {
         const parsed = JSON.parse(stored);
-        // Sort ascending by date
         parsed.sort((a: SheetTransaction, b: SheetTransaction) => 
           new Date(a.tanggal).getTime() - new Date(b.tanggal).getTime()
         );
@@ -130,6 +135,10 @@ export const TransactionView: React.FC = () => {
 
   // Delete transaction handler
   const handleDelete = async (id?: number | string) => {
+    if (isViewer) {
+      alert('Mode Viewer hanya memiliki izin membaca.');
+      return;
+    }
     if (!id) return;
     if (!window.confirm('Apakah Anda yakin ingin menghapus baris transaksi ini?')) return;
 
@@ -240,7 +249,12 @@ export const TransactionView: React.FC = () => {
 
           {/* Database / Storage status & Action Buttons */}
           <div className="flex items-center flex-wrap gap-2.5">
-            {usingDatabase ? (
+            {isViewer ? (
+              <span className="inline-flex items-center gap-1.5 text-xs bg-blue-50 text-blue-800 font-semibold px-3 py-1.5 rounded-xl border border-blue-200">
+                <Eye className="w-3.5 h-3.5 text-blue-600" />
+                <span>Mode Lihat Jamaah</span>
+              </span>
+            ) : usingDatabase ? (
               <span className="inline-flex items-center gap-1.5 text-xs bg-emerald-50 text-emerald-800 font-semibold px-3 py-1.5 rounded-xl border border-emerald-200">
                 <Database className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Tersambung Supabase</span>
@@ -255,7 +269,7 @@ export const TransactionView: React.FC = () => {
             <button
               onClick={fetchTransactions}
               title="Segarkan Data"
-              className="p-2 text-gray-500 hover:text-[#006948] hover:bg-gray-100 rounded-xl transition-all border border-[#e1e3e4]"
+              className="p-2 text-gray-500 hover:text-[#006948] hover:bg-gray-100 rounded-xl transition-all border border-[#e1e3e4] cursor-pointer"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
@@ -263,19 +277,21 @@ export const TransactionView: React.FC = () => {
             <button
               onClick={exportCSV}
               title="Unduh format CSV / Excel"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#191c1d] bg-[#f8f9fa] hover:bg-gray-200 border border-[#e1e3e4] rounded-xl transition-all"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[#191c1d] bg-[#f8f9fa] hover:bg-gray-200 border border-[#e1e3e4] rounded-xl transition-all cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export CSV</span>
             </button>
 
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#006948] hover:bg-[#005137] rounded-xl transition-all shadow-xs"
-            >
-              <Plus className="w-4 h-4" />
-              <span>{showForm ? 'Tutup Form' : 'Tambah Data Baru'}</span>
-            </button>
+            {!isViewer && (
+              <button
+                onClick={() => setShowForm(!showForm)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#006948] hover:bg-[#005137] rounded-xl transition-all shadow-xs cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>{showForm ? 'Tutup Form' : 'Tambah Data Baru'}</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -292,8 +308,8 @@ export const TransactionView: React.FC = () => {
         </div>
       </div>
 
-      {/* Embedded Input Form */}
-      {showForm && (
+      {/* Embedded Input Form (Admin / Bendahara only) */}
+      {!isViewer && showForm && (
         <TransactionForm
           lastBalance={lastBalance}
           onSuccess={() => {
@@ -326,13 +342,13 @@ export const TransactionView: React.FC = () => {
                     <span>PJ</span>
                   </div>
                 </th>
-                <th className="py-3.5 px-3 text-center w-14">Aksi</th>
+                {!isViewer && <th className="py-3.5 px-3 text-center w-14">Aksi</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e1e3e4] text-[#191c1d] text-xs md:text-sm font-normal">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-[#585f6c]">
+                  <td colSpan={isViewer ? 7 : 8} className="py-12 text-center text-[#585f6c]">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <RefreshCw className="w-6 h-6 animate-spin text-[#006948]" />
                       <p className="font-medium">Memuat data kas transaksi...</p>
@@ -388,29 +404,33 @@ export const TransactionView: React.FC = () => {
                       </td>
 
                       {/* 8. Aksi */}
-                      <td className="py-3 px-3 text-center">
-                        <button
-                          onClick={() => handleDelete(tx.id)}
-                          title="Hapus baris"
-                          className="text-gray-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </td>
+                      {!isViewer && (
+                        <td className="py-3 px-3 text-center">
+                          <button
+                            onClick={() => handleDelete(tx.id)}
+                            title="Hapus baris"
+                            className="text-gray-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-[#585f6c]">
+                  <td colSpan={isViewer ? 7 : 8} className="py-12 text-center text-[#585f6c]">
                     <p className="font-medium text-sm">Tidak ada baris data transaksi yang cocok.</p>
-                    <button
-                      onClick={() => setShowForm(true)}
-                      className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#006948] hover:underline"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Klik di sini untuk input data pertama</span>
-                    </button>
+                    {!isViewer && (
+                      <button
+                        onClick={() => setShowForm(true)}
+                        className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-[#006948] hover:underline cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Klik di sini untuk input data pertama</span>
+                      </button>
+                    )}
                   </td>
                 </tr>
               )}

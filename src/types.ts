@@ -50,4 +50,15 @@ export interface SheetTransaction {
   created_at?: string;
 }
 
+export type UserRole = 'admin' | 'bendahara' | 'viewer';
+
+export interface AppUser {
+  id: string;
+  name: string;
+  username: string;
+  role: UserRole;
+  roleLabel: string;
+  avatar?: string;
+}
+
 export type NavTab = 'dashboard' | 'transaksi' | 'rekap' | 'laporan' | 'pengaturan';
