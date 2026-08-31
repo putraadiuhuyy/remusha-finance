@@ -13,12 +13,12 @@ export const MonthDetailModal: React.FC<MonthDetailModalProps> = ({ month, year,
   if (!month) return null;
 
   return (
-    <div 
+    <div
       id="month-detail-modal-backdrop"
       className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
       onClick={onClose}
     >
-      <div 
+      <div
         id="month-detail-modal-content"
         className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-[#e1e3e4]"
         onClick={(e) => e.stopPropagation()}
@@ -38,7 +38,7 @@ export const MonthDetailModal: React.FC<MonthDetailModalProps> = ({ month, year,
               </p>
             </div>
           </div>
-          <button 
+          <button
             id="close-month-modal-btn"
             onClick={onClose}
             className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
@@ -71,7 +71,7 @@ export const MonthDetailModal: React.FC<MonthDetailModalProps> = ({ month, year,
               <div className="p-1 bg-[#006948]/10 text-[#006948] rounded-md">
                 <ArrowDown className="w-4 h-4" />
               </div>
-              <h4 className="font-bold text-sm text-[#191c1d]">Rincian Penerimaan & Infaq</h4>
+              <h4 className="font-bold text-sm text-[#191c1d]">Rincian Pemasukan</h4>
             </div>
 
             <div className="bg-[#fcfdfd] border border-[#e1e3e4] rounded-xl divide-y divide-[#e1e3e4]/60 overflow-hidden">
@@ -90,7 +90,7 @@ export const MonthDetailModal: React.FC<MonthDetailModalProps> = ({ month, year,
                 ))
               ) : (
                 <div className="p-4 text-xs text-gray-500 text-center">
-                  Total akumulasi penerimaan infaq dan donasi: {formatRupiah(month.pemasukan)}
+                  Total akumulasi penerimaan donasi: {formatRupiah(month.pemasukan)}
                 </div>
               )}
             </div>
