@@ -23,7 +23,7 @@ export const BerandaView: React.FC<BerandaViewProps> = ({ onNavigateToRekap }) =
           </div>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-6 max-w-3xl leading-tight">
-            Transparansi Kas Remaja Musholla Ar-Rouf Untuk Kepercayaan Warga
+            Transparansi Keuangan Remaja Musholla Ar-Rouf Untuk Kepercayaan Warga
           </h1>
 
           <p className="text-emerald-100 text-lg md:text-xl max-w-2xl mb-10 leading-relaxed font-medium">
