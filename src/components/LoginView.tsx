@@ -51,7 +51,7 @@ export const DEFAULT_USERS: { [key: string]: AppUser & { password: string; descr
   }
 };
 
-const LOGO_URL = 'https://lh3.googleusercontent.com/aida-public/AB6AXuCfYOLZ7e9lvJ-cMzhGg05GNrj_ipiPoYC6gAgb4EDcAVsEoqU1_ayxPtS4xwkZoab9FrMPQnlRV1E7jbLeuwiOxS5kHphVKGIT0aul8ATbcFnaxSwAMsdgQ38KzRodVUoVAD4Y2-nXCpwDMioLv1pyqr4cuyGtsmsswZTxvThRgBaZZ3_wLmj6YN9LDOb5xZdvFghW3mUjc5z5dd8CYgJxDZ1Z_WoDBu5xLayvw8bZIFUG8oLVEMHvYg';
+const LOGO_URL = '/logo.svg';
 
 export const LoginView: React.FC<LoginViewProps> = ({ isOpen, onClose, onLogin }) => {
   // Login Form State
