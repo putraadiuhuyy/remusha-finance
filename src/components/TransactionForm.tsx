@@ -81,12 +81,27 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
     setError(null);
     setSuccess(null);
 
+    const pemasukanNum = Number(formData.pemasukan) || 0;
+    const pengeluaranNum = Number(formData.pengeluaran) || 0;
+    let finalSaldo = Number(formData.saldo) || 0;
+
+    // Jika saldo seharusnya minus (pengeluaran > saldo awal + pemasukan),
+    // pastikan nilai saldo tetap minus walaupun diisi angka positif tanpa tanda '-'
+    const baseBalance = isEditMode && editItem ? ((editItem.saldo || 0) - ((editItem.pemasukan || 0) - (editItem.pengeluaran || 0))) : lastBalance;
+    const expectedSaldo = baseBalance + pemasukanNum - pengeluaranNum;
+
+    if (expectedSaldo < 0 && finalSaldo > 0) {
+      finalSaldo = -Math.abs(finalSaldo);
+    } else if (autoCalculateSaldo) {
+      finalSaldo = expectedSaldo;
+    }
+
     const txData: SheetTransaction = {
       tanggal: formData.tanggal,
       keterangan: formData.keterangan.trim(),
-      pemasukan: Number(formData.pemasukan) || 0,
-      pengeluaran: Number(formData.pengeluaran) || 0,
-      saldo: Number(formData.saldo) || 0,
+      pemasukan: pemasukanNum,
+      pengeluaran: pengeluaranNum,
+      saldo: finalSaldo,
       pj: formData.pj.trim()
     };
 
@@ -360,8 +375,20 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
                 name="saldo"
                 value={formData.saldo}
                 onChange={handleChange}
+                onBlur={() => {
+                  const pemasukanNum = Number(formData.pemasukan) || 0;
+                  const pengeluaranNum = Number(formData.pengeluaran) || 0;
+                  const baseBalance = isEditMode && editItem ? ((editItem.saldo || 0) - ((editItem.pemasukan || 0) - (editItem.pengeluaran || 0))) : lastBalance;
+                  const expected = baseBalance + pemasukanNum - pengeluaranNum;
+                  const currentVal = Number(formData.saldo) || 0;
+                  if (expected < 0 && currentVal > 0) {
+                    setFormData(prev => ({ ...prev, saldo: (-Math.abs(currentVal)).toString() }));
+                  }
+                }}
                 placeholder="0"
-                className="w-full pl-9 pr-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl text-sm font-bold text-[#191c1d] focus:outline-none focus:ring-2 focus:ring-[#006948] transition-all"
+                className={`w-full pl-9 pr-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#006948] transition-all ${
+                  Number(formData.saldo) < 0 ? 'text-[#ba1a1a]' : 'text-[#191c1d]'
+                }`}
               />
             </div>
           </div>
