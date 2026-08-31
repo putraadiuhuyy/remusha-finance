@@ -60,7 +60,7 @@ export const BerandaView: React.FC<BerandaViewProps> = ({ onNavigateToRekap }) =
           </div>
           <h3 className="text-xl font-bold text-[#191c1d] mb-3">Laporan Real-time</h3>
           <p className="text-[#585f6c] leading-relaxed text-sm">
-            Data keuangan selalu terbarui dan dapat diakses langsung oleh jamaah melalui portal ini dari mana saja.
+            Data keuangan selalu terbarui dan dapat diakses langsung oleh warga melalui portal ini dari mana saja.
           </p>
         </div>
 
