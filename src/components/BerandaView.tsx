@@ -19,11 +19,11 @@ export const BerandaView: React.FC<BerandaViewProps> = ({ onNavigateToRekap }) =
         <div className="relative z-10 px-6 py-16 md:py-24 md:px-12 flex flex-col items-center text-center">
           <div className="inline-flex items-center gap-1.5 bg-white/10 px-4 py-1.5 rounded-full text-sm font-semibold text-emerald-50 backdrop-blur-md mb-6 border border-white/20">
             <ShieldCheck className="w-4 h-4" />
-            <span>Portal Keuangan Musholla Terbuka</span>
+            <span>Portal Keuangan Remaja Musholla Terbuka</span>
           </div>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight mb-6 max-w-3xl leading-tight">
-            Transparansi Kas Musholla Untuk Kepercayaan Warga
+            Transparansi Kas Remaja Musholla Ar-Rouf Untuk Kepercayaan Warga
           </h1>
 
           <p className="text-emerald-100 text-lg md:text-xl max-w-2xl mb-10 leading-relaxed font-medium">
