@@ -1,13 +1,13 @@
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  Wallet, 
-  FileSpreadsheet, 
-  BarChart3, 
-  Settings, 
-  LogOut, 
+import {
+  LayoutDashboard,
+  Wallet,
+  FileSpreadsheet,
+  BarChart3,
+  Settings,
+  LogOut,
   LogIn,
-  Menu, 
+  Menu,
   X,
   Eye,
   Shield,
@@ -72,9 +72,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Mobile Top Navbar */}
       <nav id="mobile-top-nav" className="md:hidden fixed top-0 left-0 w-full z-40 flex justify-between items-center px-4 h-16 bg-white border-b border-[#e1e3e4] shadow-xs">
         <div className="flex items-center gap-2.5">
-          <img 
-            src={LOGO_URL} 
-            alt="REMUSHA Finance Logo" 
+          <img
+            src={LOGO_URL}
+            alt="REMUSHA Finance Logo"
             className="h-8 w-8 rounded-lg object-cover"
             onError={(e) => {
               (e.target as HTMLElement).style.display = 'none';
@@ -85,7 +85,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <span className="text-[11px] text-[#585f6c]">{currentUser?.name || 'Viewer'}</span>
           </div>
         </div>
-        <button 
+        <button
           id="mobile-menu-btn"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           className="p-2 text-[#006948] hover:bg-[#f3f4f5] rounded-lg transition-colors"
@@ -97,12 +97,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Mobile Drawer Overlay */}
       {isMobileMenuOpen && (
-        <div 
+        <div
           id="mobile-drawer-backdrop"
           className="md:hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex"
           onClick={() => setIsMobileMenuOpen(false)}
         >
-          <div 
+          <div
             id="mobile-drawer-content"
             className="w-72 bg-white h-full p-5 flex flex-col shadow-2xl animate-fade-in"
             onClick={(e) => e.stopPropagation()}
@@ -118,7 +118,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </span>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="p-1.5 text-gray-500 hover:bg-gray-100 rounded-md"
               >
@@ -137,11 +137,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       setActiveTab(item.id);
                       setIsMobileMenuOpen(false);
                     }}
-                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-medium transition-all duration-200 ${
-                      isActive
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-medium transition-all duration-200 ${isActive
                         ? 'bg-[#dce2f3] text-[#151c27] font-bold shadow-xs'
                         : 'text-[#3d4a42] hover:bg-[#f3f4f5] hover:text-[#006948]'
-                    }`}
+                      }`}
                   >
                     <span className={isActive ? 'text-[#006948]' : 'text-[#585f6c]'}>{item.icon}</span>
                     <span>{item.label}</span>
@@ -182,23 +181,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       {/* Desktop / Tablet Sidebar */}
-      <aside 
+      <aside
         id="desktop-sidebar"
         className="hidden md:flex flex-col fixed left-0 top-0 h-screen p-4 z-40 border-r border-[#bccac0]/40 bg-white w-64 shadow-xs"
       >
         {/* Brand Header */}
         <div className="flex items-center gap-3 mb-5 px-2">
-          <img 
-            src={LOGO_URL} 
-            alt="REMUSHA Finance Logo" 
-            className="h-10 w-10 rounded-xl object-cover shadow-xs" 
+          <img
+            src={LOGO_URL}
+            alt="REMUSHA Finance Logo"
+            className="h-10 w-10 rounded-xl object-cover shadow-xs"
           />
           <div>
             <h1 className="text-xl font-black text-[#006948] tracking-tight leading-tight">
               REMUSHA<br />Finance
             </h1>
             <p className="text-[11px] text-[#585f6c] font-medium mt-0.5">
-              Portal Kas Masjid
+              Portal Kas Musholla
             </p>
           </div>
         </div>
@@ -233,11 +232,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 key={item.id}
                 id={`desktop-nav-btn-${item.id}`}
                 onClick={() => setActiveTab(item.id)}
-                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm transition-all duration-200 group ${
-                  isActive
+                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm transition-all duration-200 group ${isActive
                     ? 'bg-[#dce2f3] text-[#151c27] font-bold scale-[0.98] shadow-xs'
                     : 'text-[#3d4a42] hover:bg-[#f3f4f5] hover:text-[#006948]'
-                }`}
+                  }`}
               >
                 <span className={`transition-colors ${isActive ? 'text-[#006948]' : 'text-[#585f6c] group-hover:text-[#006948]'}`}>
                   {item.icon}
