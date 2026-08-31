@@ -27,7 +27,7 @@ export const BerandaView: React.FC<BerandaViewProps> = ({ onNavigateToRekap }) =
           </h1>
 
           <p className="text-emerald-100 text-lg md:text-xl max-w-2xl mb-10 leading-relaxed font-medium">
-            Platform modern pengelolaan keuangan REMUSHA. Membangun kepercayaan melalui laporan keuangan yang terbuka, akurat, dan dapat diakses oleh seluruh donatur kapan saja.
+            Platform modern pengelolaan keuangan Remaja Musholla Ar - Rouf (REMUSHA). Membangun kepercayaan melalui laporan keuangan yang terbuka, akurat, dan dapat diakses oleh seluruh donatur kapan saja.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
