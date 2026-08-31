@@ -148,8 +148,20 @@ export const TransactionView: React.FC<TransactionViewProps> = ({ currentUser })
     window.scrollTo({ top: 100, behavior: 'smooth' });
   };
 
+  // Hitung Saldo Berjalan (Running Balance) secara kumulatif dari urutan awal ke akhir
+  let running = 0;
+  const enrichedTransactions = transactions.map(tx => {
+    const pem = Number(tx.pemasukan) || 0;
+    const peng = Number(tx.pengeluaran) || 0;
+    running = running + pem - peng;
+    return {
+      ...tx,
+      calculatedSaldo: running
+    };
+  });
+
   // Filter transactions
-  const filtered = transactions.filter(tx => {
+  const filtered = enrichedTransactions.filter(tx => {
     const term = searchTerm.toLowerCase();
     return (
       (tx.keterangan || '').toLowerCase().includes(term) ||
@@ -161,10 +173,10 @@ export const TransactionView: React.FC<TransactionViewProps> = ({ currentUser })
   // Calculate Running Summary
   const totalPemasukan = transactions.reduce((sum, t) => sum + (Number(t.pemasukan) || 0), 0);
   const totalPengeluaran = transactions.reduce((sum, t) => sum + (Number(t.pengeluaran) || 0), 0);
-  const currentSaldo = transactions.length > 0 ? (transactions[transactions.length - 1].saldo || (totalPemasukan - totalPengeluaran)) : 0;
+  const currentSaldo = totalPemasukan - totalPengeluaran;
 
   // Last known balance for form auto-calculation
-  const lastBalance = transactions.length > 0 ? Number(transactions[transactions.length - 1].saldo) || 0 : 0;
+  const lastBalance = currentSaldo;
 
   // Export CSV
   const exportCSV = () => {
@@ -175,7 +187,7 @@ export const TransactionView: React.FC<TransactionViewProps> = ({ currentUser })
       `"${(tx.keterangan || '').replace(/"/g, '""')}"`,
       tx.pemasukan,
       tx.pengeluaran,
-      tx.saldo,
+      tx.calculatedSaldo,
       `"${(tx.pj || '').replace(/"/g, '""')}"`
     ]);
 
@@ -359,7 +371,7 @@ export const TransactionView: React.FC<TransactionViewProps> = ({ currentUser })
                 filtered.map((tx, index) => {
                   const pemasukanNum = Number(tx.pemasukan) || 0;
                   const pengeluaranNum = Number(tx.pengeluaran) || 0;
-                  const saldoNum = Number(tx.saldo) || 0;
+                  const saldoNum = (tx as any).calculatedSaldo !== undefined ? (tx as any).calculatedSaldo : (Number(tx.saldo) || 0);
 
                   return (
                     <tr 
@@ -392,7 +404,9 @@ export const TransactionView: React.FC<TransactionViewProps> = ({ currentUser })
                       </td>
 
                       {/* 6. Saldo */}
-                      <td className="py-3 px-4 text-right font-bold text-[#191c1d] whitespace-nowrap bg-[#fbfcfb] border-r border-[#e1e3e4]">
+                      <td className={`py-3 px-4 text-right font-bold whitespace-nowrap bg-[#fbfcfb] border-r border-[#e1e3e4] ${
+                        saldoNum < 0 ? 'text-[#ba1a1a]' : 'text-[#191c1d]'
+                      }`}>
                         {formatRupiah(saldoNum)}
                       </td>
 
