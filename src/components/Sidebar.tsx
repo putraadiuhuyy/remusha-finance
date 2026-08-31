@@ -129,36 +129,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <nav className="flex flex-col gap-1.5 flex-1">
               {navItems.map((item) => {
                 const isActive = activeTab === item.id;
-                const isLocked = item.id === 'pengaturan' && currentUser?.role === 'viewer';
-
                 return (
                   <button
                     key={item.id}
                     id={`mobile-nav-btn-${item.id}`}
                     onClick={() => {
+                      setActiveTab(item.id);
                       setIsMobileMenuOpen(false);
-                      if (isLocked) {
-                        setActiveTab(item.id);
-                        onLoginClick();
-                      } else {
-                        setActiveTab(item.id);
-                      }
                     }}
-                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-left text-sm font-medium transition-all duration-200 ${isActive
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm font-medium transition-all duration-200 ${isActive
                         ? 'bg-[#dce2f3] text-[#151c27] font-bold shadow-xs'
                         : 'text-[#3d4a42] hover:bg-[#f3f4f5] hover:text-[#006948]'
                       }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <span className={isActive ? 'text-[#006948]' : 'text-[#585f6c]'}>{item.icon}</span>
-                      <span>{item.label}</span>
-                    </div>
-                    {isLocked && (
-                      <span className="text-[10px] bg-amber-50 text-amber-700 font-semibold px-2 py-0.5 rounded-md border border-amber-200/60 flex items-center gap-1">
-                        <Lock className="w-2.5 h-2.5" />
-                        <span>Login</span>
-                      </span>
-                    )}
+                    <span className={isActive ? 'text-[#006948]' : 'text-[#585f6c]'}>{item.icon}</span>
+                    <span>{item.label}</span>
                   </button>
                 );
               })}
@@ -242,37 +227,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <nav className="flex flex-col gap-1.5 flex-grow">
           {navItems.map((item) => {
             const isActive = activeTab === item.id;
-            const isLocked = item.id === 'pengaturan' && currentUser?.role === 'viewer';
-
             return (
               <button
                 key={item.id}
                 id={`desktop-nav-btn-${item.id}`}
-                onClick={() => {
-                  if (isLocked) {
-                    setActiveTab(item.id);
-                    onLoginClick();
-                  } else {
-                    setActiveTab(item.id);
-                  }
-                }}
-                className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-left text-sm transition-all duration-200 group cursor-pointer ${isActive
+                onClick={() => setActiveTab(item.id)}
+                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left text-sm transition-all duration-200 group ${isActive
                     ? 'bg-[#dce2f3] text-[#151c27] font-bold scale-[0.98] shadow-xs'
                     : 'text-[#3d4a42] hover:bg-[#f3f4f5] hover:text-[#006948]'
                   }`}
               >
-                <div className="flex items-center gap-3">
-                  <span className={`transition-colors ${isActive ? 'text-[#006948]' : 'text-[#585f6c] group-hover:text-[#006948]'}`}>
-                    {item.icon}
-                  </span>
-                  <span className="tracking-tight">{item.label}</span>
-                </div>
-                {isLocked && (
-                  <span className="text-[10px] bg-amber-50 text-amber-700 font-semibold px-2 py-0.5 rounded-md border border-amber-200/60 flex items-center gap-1">
-                    <Lock className="w-2.5 h-2.5" />
-                    <span>Login</span>
-                  </span>
-                )}
+                <span className={`transition-colors ${isActive ? 'text-[#006948]' : 'text-[#585f6c] group-hover:text-[#006948]'}`}>
+                  {item.icon}
+                </span>
+                <span className="tracking-tight">{item.label}</span>
               </button>
             );
           })}

@@ -171,10 +171,7 @@ export default function App() {
         )}
 
           {activeTab === 'pengaturan' && (
-            <SettingsView 
-              currentUser={currentUser}
-              onLoginClick={() => setIsLoginModalOpen(true)}
-            />
+            <SettingsView />
           )}
         </div>
 
