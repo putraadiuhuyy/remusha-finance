@@ -10,11 +10,11 @@ interface TransactionFormProps {
   onCancel?: () => void;
 }
 
-export const TransactionForm: React.FC<TransactionFormProps> = ({ 
-  lastBalance, 
-  editItem = null, 
-  onSuccess, 
-  onCancel 
+export const TransactionForm: React.FC<TransactionFormProps> = ({
+  lastBalance,
+  editItem = null,
+  onSuccess,
+  onCancel
 }) => {
   const isEditMode = !!editItem;
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -217,8 +217,8 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
   };
 
   return (
-    <div 
-      id="transaction-form-card" 
+    <div
+      id="transaction-form-card"
       className="bg-white p-5 lg:p-7 rounded-2xl border border-[#006948]/20 shadow-sm mb-6 transition-all duration-300 animate-fade-in"
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-5 border-b border-[#e1e3e4]">
@@ -232,8 +232,8 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
             </h3>
           </div>
           <p className="text-xs text-[#585f6c] mt-1">
-            {isEditMode 
-              ? 'Perbarui informasi transaksi dan simpan perubahan' 
+            {isEditMode
+              ? 'Perbarui informasi transaksi dan simpan perubahan'
               : 'Data akan diurutkan dari tanggal yang lebih lama ke yang terbaru di buku kas'}
           </p>
         </div>
@@ -243,11 +243,10 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
             <button
               type="button"
               onClick={() => setAutoCalculateSaldo(!autoCalculateSaldo)}
-              className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
-                autoCalculateSaldo
+              className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${autoCalculateSaldo
                   ? 'bg-emerald-50 text-emerald-800 border-emerald-200 shadow-xs'
                   : 'bg-gray-100 text-gray-600 border-gray-200'
-              }`}
+                }`}
             >
               <Calculator className="w-3.5 h-3.5" />
               <span>{autoCalculateSaldo ? 'Hitung Saldo Otomatis: ON' : 'Saldo Manual'}</span>
@@ -299,7 +298,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
               value={formData.keterangan}
               onChange={handleChange}
               required
-              placeholder="Contoh: Kotak Amal / Pembelian Konsumsi"
+              placeholder="Contoh: Akhsan / Pembelian Konsumsi"
               className="w-full px-3.5 py-2.5 bg-[#f8f9fa] border border-[#e1e3e4] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#006948] transition-all"
             />
           </div>
