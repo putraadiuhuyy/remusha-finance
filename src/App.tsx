@@ -10,6 +10,7 @@ import { SummaryCards } from './components/SummaryCards';
 import { BarChartArea } from './components/BarChartArea';
 import { MonthlyTable } from './components/MonthlyTable';
 import { MonthDetailModal } from './components/MonthDetailModal';
+import { WeekDetailModal } from './components/WeekDetailModal';
 import { BerandaView } from './components/BerandaView';
 import { TransactionView } from './components/TransactionView';
 import { SettingsView } from './components/SettingsView';
@@ -17,12 +18,15 @@ import { LogoutModal } from './components/LogoutModal';
 import { LoginView, DEFAULT_USERS } from './components/LoginView';
 import { Footer } from './components/Footer';
 import { financialData2027, financialData2026 } from './data/financialData';
-import { NavTab, MonthlyRecord, AppUser } from './types';
+import { NavTab, MonthlyRecord, AppUser, RekapViewMode, WeeklyRecord } from './types';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('beranda');
   const [selectedYear, setSelectedYear] = useState<2027 | 2026>(2027);
   const [selectedMonth, setSelectedMonth] = useState<MonthlyRecord | null>(null);
+  const [rekapViewMode, setRekapViewMode] = useState<RekapViewMode>('bulanan');
+  const [selectedWeek, setSelectedWeek] = useState<WeeklyRecord | null>(null);
+  const [selectedMonthIndexForWeekly, setSelectedMonthIndexForWeekly] = useState<number>(1);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -48,6 +52,16 @@ export default function App() {
   });
 
   const currentYearData = selectedYear === 2027 ? financialData2027 : financialData2026;
+  const selectedMonthForWeekly = currentYearData.months.find(m => m.monthIndex === selectedMonthIndexForWeekly) || currentYearData.months[0];
+
+  // Guard tambahan: jika sesi berubah (misal logout) sementara tab Pengaturan
+  // sedang aktif, dan role saat ini bukan admin/bendahara, alihkan ke Beranda.
+  useEffect(() => {
+    const canAccessSettings = currentUser?.role === 'admin' || currentUser?.role === 'bendahara';
+    if (activeTab === 'pengaturan' && !canAccessSettings) {
+      setActiveTab('beranda');
+    }
+  }, [currentUser, activeTab]);
 
   const handleLogin = (user: AppUser) => {
     setCurrentUser(user);
@@ -150,12 +164,20 @@ export default function App() {
             <BarChartArea
               months={currentYearData.months}
               onSelectMonth={(month) => setSelectedMonth(month)}
+              weeks={rekapViewMode === 'mingguan' ? selectedMonthForWeekly.weeks : undefined}
+              weeksMonthLabel={rekapViewMode === 'mingguan' ? `${selectedMonthForWeekly.month} ${currentYearData.year}` : undefined}
+              onSelectWeek={(week) => setSelectedWeek(week)}
             />
 
             {/* 3. Monthly Table */}
             <MonthlyTable
               data={currentYearData}
               onSelectMonth={(month) => setSelectedMonth(month)}
+              viewMode={rekapViewMode}
+              setViewMode={setRekapViewMode}
+              selectedMonthForWeekly={selectedMonthForWeekly}
+              setSelectedMonthForWeekly={(month) => setSelectedMonthIndexForWeekly(month.monthIndex)}
+              onSelectWeek={(week) => setSelectedWeek(week)}
             />
           </div>
         )}
@@ -171,7 +193,7 @@ export default function App() {
         )}
 
           {activeTab === 'pengaturan' && (
-            <SettingsView />
+            <SettingsView currentUser={currentUser} />
           )}
         </div>
 
@@ -184,6 +206,14 @@ export default function App() {
         month={selectedMonth}
         year={selectedYear}
         onClose={() => setSelectedMonth(null)}
+      />
+
+      {/* Week Detail Modal */}
+      <WeekDetailModal
+        week={selectedWeek}
+        monthLabel={selectedMonthForWeekly.month}
+        year={selectedYear}
+        onClose={() => setSelectedWeek(null)}
       />
 
       {/* Logout Confirmation Modal */}

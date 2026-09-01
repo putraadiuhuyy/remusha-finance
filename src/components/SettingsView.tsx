@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
-import { Settings, Shield, Bell, Lock, Smartphone, Globe, Check } from 'lucide-react';
+import { Settings, Shield, Bell, Lock, Smartphone, Globe, Check, ShieldAlert } from 'lucide-react';
+import { AppUser } from '../types';
 
-export const SettingsView: React.FC = () => {
+interface SettingsViewProps {
+  currentUser?: AppUser | null;
+}
+
+export const SettingsView: React.FC<SettingsViewProps> = ({ currentUser }) => {
   const [currencyFormat, setCurrencyFormat] = useState('IDR');
   const [notificationEmail, setNotificationEmail] = useState(true);
   const [reportDigest, setReportDigest] = useState('monthly');
@@ -11,6 +16,28 @@ export const SettingsView: React.FC = () => {
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 2000);
   };
+
+  // Guard: hanya admin & bendahara yang boleh membuka halaman Pengaturan
+  const isAuthorized = currentUser?.role === 'admin' || currentUser?.role === 'bendahara';
+
+  if (!isAuthorized) {
+    return (
+      <div id="settings-view-restricted" className="animate-fade-in max-w-4xl">
+        <div className="bg-white p-8 sm:p-10 rounded-2xl border border-[#e1e3e4] shadow-xs flex flex-col items-center text-center gap-4">
+          <div className="p-3.5 bg-[#ffdad6] text-[#ba1a1a] rounded-2xl">
+            <ShieldAlert className="w-7 h-7" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-[#191c1d]">Akses Terbatas</h2>
+            <p className="text-sm text-[#585f6c] mt-1.5 max-w-md">
+              Halaman Pengaturan hanya dapat diakses oleh <span className="font-semibold text-[#191c1d]">Admin</span> atau{' '}
+              <span className="font-semibold text-[#191c1d]">Bendahara</span>. Silakan login menggunakan akun pengurus untuk melanjutkan.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div id="settings-view" className="space-y-6 animate-fade-in max-w-4xl">
@@ -35,16 +62,20 @@ export const SettingsView: React.FC = () => {
           <div className="flex justify-between items-center">
             <span className="text-[#585f6c]">Status Peran:</span>
             <span className="font-bold text-[#006948] bg-emerald-100 px-2.5 py-0.5 rounded-full text-xs">
-              Mosque Member (Viewer)
+              {currentUser?.roleLabel || 'Pengurus'}
             </span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-[#585f6c]">Izin Akses:</span>
-            <span className="font-medium text-[#191c1d]">Melihat Rekap Kas, Laporan & Buku Transaksi</span>
+            <span className="font-medium text-[#191c1d]">
+              {currentUser?.role === 'admin'
+                ? 'Input, Edit, Hapus, Rekap Keuangan & Pengaturan'
+                : 'Pencatatan Kas & Transaksi'}
+            </span>
           </div>
           <div className="flex justify-between items-center">
             <span className="text-[#585f6c]">Izin Edit & Rekonsiliasi:</span>
-            <span className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded">Hanya Admin / Bendahara</span>
+            <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">Diizinkan untuk peran Anda</span>
           </div>
         </div>
       </div>

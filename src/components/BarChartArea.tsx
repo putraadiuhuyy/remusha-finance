@@ -1,22 +1,57 @@
 import React, { useState } from 'react';
-import { MonthlyRecord } from '../types';
+import { MonthlyRecord, WeeklyRecord } from '../types';
 import { formatRupiah } from '../data/financialData';
+
+interface ChartBar {
+  key: string;
+  label: string;
+  sublabel?: string;
+  pemasukan: number;
+  pengeluaran: number;
+  surplus: number;
+  isEmphasized?: boolean;
+}
 
 interface BarChartAreaProps {
   months: MonthlyRecord[];
   onSelectMonth: (month: MonthlyRecord) => void;
+  weeks?: WeeklyRecord[];
+  weeksMonthLabel?: string;
+  onSelectWeek?: (week: WeeklyRecord) => void;
 }
 
-export const BarChartArea: React.FC<BarChartAreaProps> = ({ months, onSelectMonth }) => {
-  const [hoveredMonth, setHoveredMonth] = useState<MonthlyRecord | null>(null);
+export const BarChartArea: React.FC<BarChartAreaProps> = ({ months, onSelectMonth, weeks, weeksMonthLabel, onSelectWeek }) => {
+  const [hoveredBar, setHoveredBar] = useState<ChartBar | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
+
+  const isWeeklyMode = Boolean(weeks && weeks.length > 0);
+
+  const bars: ChartBar[] = isWeeklyMode
+    ? (weeks as WeeklyRecord[]).map((w) => ({
+        key: `week-${w.weekIndex}`,
+        label: w.label,
+        sublabel: w.dateRange,
+        pemasukan: w.pemasukan,
+        pengeluaran: w.pengeluaran,
+        surplus: w.surplus,
+        isEmphasized: w.weekIndex === (weeks as WeeklyRecord[]).length
+      }))
+    : months.map((m) => ({
+        key: m.shortMonth,
+        label: m.shortMonth,
+        sublabel: m.month,
+        pemasukan: m.pemasukan,
+        pengeluaran: m.pengeluaran,
+        surplus: m.surplus,
+        isEmphasized: m.shortMonth === 'Des'
+      }));
 
   // Maximum value for scaling (16M gives room for 15.2M April)
   const maxScaleValue = 16000000;
 
-  const handleMouseEnter = (month: MonthlyRecord, e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseEnter = (bar: ChartBar, e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    setHoveredMonth(month);
+    setHoveredBar(bar);
     setTooltipPos({
       x: rect.left + rect.width / 2,
       y: rect.top,
@@ -24,8 +59,16 @@ export const BarChartArea: React.FC<BarChartAreaProps> = ({ months, onSelectMont
   };
 
   const handleMouseLeave = () => {
-    setHoveredMonth(null);
+    setHoveredBar(null);
     setTooltipPos(null);
+  };
+
+  const handleSelectBar = (bar: ChartBar, index: number) => {
+    if (isWeeklyMode && onSelectWeek && weeks) {
+      onSelectWeek(weeks[index]);
+    } else if (!isWeeklyMode) {
+      onSelectMonth(months[index]);
+    }
   };
 
   return (
@@ -40,7 +83,9 @@ export const BarChartArea: React.FC<BarChartAreaProps> = ({ months, onSelectMont
             Pemasukan vs Pengeluaran
           </h3>
           <p className="text-xs text-[#585f6c] mt-0.5">
-            Perbandingan arus kas bulanan sepanjang tahun
+            {isWeeklyMode
+              ? `Perbandingan arus kas mingguan — ${weeksMonthLabel || ''}`
+              : 'Perbandingan arus kas bulanan sepanjang tahun'}
           </p>
         </div>
         
@@ -61,9 +106,9 @@ export const BarChartArea: React.FC<BarChartAreaProps> = ({ months, onSelectMont
       <div className="relative pt-6 pb-2 pl-8 md:pl-10 pr-2">
         {/* Y Axis Labels */}
         <div className="absolute left-0 top-6 bottom-10 flex flex-col justify-between text-[#585f6c] font-semibold text-[11px] select-none pr-2 text-right w-8 md:w-10">
-          <span>15M</span>
-          <span>10M</span>
-          <span>5M</span>
+          <span>15Jt</span>
+          <span>10Jt</span>
+          <span>5Jt</span>
           <span>0</span>
         </div>
 
@@ -75,20 +120,19 @@ export const BarChartArea: React.FC<BarChartAreaProps> = ({ months, onSelectMont
           <div className="border-t border-[#bccac0] w-full"></div>
         </div>
 
-        {/* Chart Bars (Jan-Des) */}
+        {/* Chart Bars */}
         <div className="flex items-end justify-between gap-1 sm:gap-2 md:gap-3 h-56 relative z-10">
-          {months.map((m) => {
-            const incomeHeightPercent = Math.min(100, Math.max(8, (m.pemasukan / maxScaleValue) * 100));
-            const expenseHeightPercent = Math.min(100, Math.max(8, (m.pengeluaran / maxScaleValue) * 100));
-            const isHovered = hoveredMonth?.shortMonth === m.shortMonth;
-            const isDecember = m.shortMonth === 'Des';
+          {bars.map((bar, index) => {
+            const incomeHeightPercent = Math.min(100, Math.max(8, (bar.pemasukan / maxScaleValue) * 100));
+            const expenseHeightPercent = Math.min(100, Math.max(8, (bar.pengeluaran / maxScaleValue) * 100));
+            const isHovered = hoveredBar?.key === bar.key;
 
             return (
               <div 
-                key={m.shortMonth}
-                id={`chart-bar-col-${m.shortMonth.toLowerCase()}`}
-                onClick={() => onSelectMonth(m)}
-                onMouseEnter={(e) => handleMouseEnter(m, e)}
+                key={bar.key}
+                id={`chart-bar-col-${bar.key.toLowerCase()}`}
+                onClick={() => handleSelectBar(bar, index)}
+                onMouseEnter={(e) => handleMouseEnter(bar, e)}
                 onMouseLeave={handleMouseLeave}
                 className={`flex-1 flex flex-col items-center h-full justify-end group cursor-pointer transition-all duration-200 ${
                   isHovered ? 'scale-105' : 'hover:opacity-100'
@@ -116,14 +160,14 @@ export const BarChartArea: React.FC<BarChartAreaProps> = ({ months, onSelectMont
                 <div className="h-6 flex items-center justify-center">
                   <span 
                     className={`text-[11px] sm:text-xs transition-colors ${
-                      isDecember 
+                      bar.isEmphasized 
                         ? 'font-bold text-[#191c1d]' 
                         : isHovered 
                           ? 'text-[#006948] font-bold' 
                           : 'text-[#585f6c] font-medium'
                     }`}
                   >
-                    {m.shortMonth}
+                    {isWeeklyMode ? `M${(bar as ChartBar).label.replace('Minggu ', '')}` : bar.label}
                   </span>
                 </div>
               </div>
@@ -133,7 +177,7 @@ export const BarChartArea: React.FC<BarChartAreaProps> = ({ months, onSelectMont
       </div>
 
       {/* Floating Hover Tooltip */}
-      {hoveredMonth && tooltipPos && (
+      {hoveredBar && tooltipPos && (
         <div 
           id="chart-hover-tooltip"
           className="fixed z-50 bg-[#191c1d] text-white text-xs rounded-xl p-3 shadow-xl pointer-events-none transform -translate-x-1/2 -translate-y-full -mt-2 border border-white/10 w-48 animate-fade-in"
@@ -143,26 +187,28 @@ export const BarChartArea: React.FC<BarChartAreaProps> = ({ months, onSelectMont
           }}
         >
           <div className="font-bold text-sm text-emerald-300 pb-1.5 border-b border-white/10 mb-2 flex justify-between items-center">
-            <span>{hoveredMonth.month}</span>
-            <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded text-gray-300 font-normal">Bulan ke-{hoveredMonth.monthIndex}</span>
+            <span>{hoveredBar.label}</span>
+            <span className="text-[10px] bg-white/10 px-1.5 py-0.5 rounded text-gray-300 font-normal">
+              {hoveredBar.sublabel}
+            </span>
           </div>
           <div className="space-y-1">
             <div className="flex justify-between items-center">
               <span className="text-gray-300 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#006948]"></span> Pemasukan:
               </span>
-              <span className="font-semibold text-emerald-400">{formatRupiah(hoveredMonth.pemasukan)}</span>
+              <span className="font-semibold text-emerald-400">{formatRupiah(hoveredBar.pemasukan)}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-300 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#ba1a1a]"></span> Pengeluaran:
               </span>
-              <span className="font-semibold text-red-400">{formatRupiah(hoveredMonth.pengeluaran)}</span>
+              <span className="font-semibold text-red-400">{formatRupiah(hoveredBar.pengeluaran)}</span>
             </div>
             <div className="pt-1.5 border-t border-white/10 flex justify-between items-center">
               <span className="text-gray-300">Surplus:</span>
-              <span className={`font-bold ${hoveredMonth.surplus >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>
-                {hoveredMonth.surplus >= 0 ? '+' : ''}{formatRupiah(hoveredMonth.surplus)}
+              <span className={`font-bold ${hoveredBar.surplus >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>
+                {hoveredBar.surplus >= 0 ? '+' : ''}{formatRupiah(hoveredBar.surplus)}
               </span>
             </div>
           </div>

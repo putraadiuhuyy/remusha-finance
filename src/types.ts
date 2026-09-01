@@ -6,6 +6,18 @@ export interface FinancialDetailItem {
   date: string;
 }
 
+export interface WeeklyRecord {
+  weekIndex: number;
+  label: string;
+  dateRange: string;
+  pemasukan: number;
+  pengeluaran: number;
+  surplus: number;
+  saldoKumulatif: number;
+  pemasukanDetails?: FinancialDetailItem[];
+  pengeluaranDetails?: FinancialDetailItem[];
+}
+
 export interface MonthlyRecord {
   month: string;
   shortMonth: string;
@@ -16,6 +28,7 @@ export interface MonthlyRecord {
   saldoKumulatif: number;
   pemasukanDetails?: FinancialDetailItem[];
   pengeluaranDetails?: FinancialDetailItem[];
+  weeks?: WeeklyRecord[];
 }
 
 export interface YearFinancialData {
@@ -62,3 +75,4 @@ export interface AppUser {
 }
 
 export type NavTab = 'beranda' | 'transaksi' | 'rekap' | 'pengaturan';
+export type RekapViewMode = 'bulanan' | 'mingguan';

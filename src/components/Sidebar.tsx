@@ -38,12 +38,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setIsMobileMenuOpen,
   currentUser
 }) => {
-  const navItems: { id: NavTab; label: string; icon: React.ReactNode }[] = [
+  // Hanya admin & bendahara yang boleh mengakses menu Pengaturan
+  const canAccessSettings = currentUser?.role === 'admin' || currentUser?.role === 'bendahara';
+
+  const allNavItems: { id: NavTab; label: string; icon: React.ReactNode; restricted?: boolean }[] = [
     { id: 'beranda', label: 'Beranda', icon: <LayoutDashboard className="w-5 h-5" /> },
     { id: 'transaksi', label: 'Transaksi', icon: <Wallet className="w-5 h-5" /> },
     { id: 'rekap', label: 'Rekap Keuangan', icon: <FileSpreadsheet className="w-5 h-5" /> },
-    { id: 'pengaturan', label: 'Pengaturan', icon: <Settings className="w-5 h-5" /> },
+    { id: 'pengaturan', label: 'Pengaturan', icon: <Settings className="w-5 h-5" />, restricted: true },
   ];
+
+  const navItems = allNavItems.filter((item) => !item.restricted || canAccessSettings);
 
   const getRoleIcon = (role?: string) => {
     switch (role) {
