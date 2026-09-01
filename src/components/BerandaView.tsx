@@ -78,7 +78,7 @@ export const BerandaView: React.FC<BerandaViewProps> = ({ onNavigateToRekap }) =
       {/* About/CTA Section */}
       <div className="bg-[#f8f9fa] border border-[#e1e3e4] p-8 md:p-12 rounded-3xl flex flex-col md:flex-row items-center gap-8 justify-between">
         <div className="max-w-xl">
-          <h2 className="text-2xl font-bold text-[#191c1d] mb-4">Amanah Dari Donatur dan Warga, Untuk Musholla</h2>
+          <h2 className="text-2xl font-bold text-[#191c1d] mb-4">Amanah Dari Donatur dan Warga, Untuk Operasional Organisasi</h2>
           <p className="text-[#585f6c] leading-relaxed text-sm">
             Sistem ini disiapkan untuk mempermudah operasional kepengurusan di masa depan (2027 dan seterusnya). Kami berkomitmen menjaga seluruh amanah dari para donatur dan jamaah demi kemakmuran Musholla.
           </p>
